@@ -1,0 +1,8 @@
+version: 1.4.1
+files:
+  - url: https://github.com/Maxence-P-dev/notes-plus-plus/releases/download/v1.4.1/NotesPlusPlus-Setup.exe
+    sha512: HoFmvmDco0oC6ZpcTWMPipYBAm6J1aA4woMySfvDrZTM3qaD9vYafdhD5ARlJp782x1NMrsYnuwCJsTHSubg+w==
+    size: 169253167
+path: https://github.com/Maxence-P-dev/notes-plus-plus/releases/download/v1.4.1/NotesPlusPlus-Setup.exe
+sha512: HoFmvmDco0oC6ZpcTWMPipYBAm6J1aA4woMySfvDrZTM3qaD9vYafdhD5ARlJp782x1NMrsYnuwCJsTHSubg+w==
+releaseDate: '2026-10-12T12:31:44.482Z'
