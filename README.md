@@ -19,12 +19,16 @@
 </p>
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Démonstration de Notes++ : menu /, mise en forme, encadrés et thème sombre" width="900">
+  <a href="docs/presentation.mp4"><img src="docs/teaser.gif" alt="Présentation de Notes++ en motion design : cliquer pour voir la vidéo" width="900"></a>
 </p>
 
-<p align="center"><a href="docs/presentation.mp4"><b>Regarder la présentation complète en vidéo</b></a> (3 min, avec voix off)</p>
+<p align="center"><a href="docs/presentation.mp4"><b>Regarder la présentation en vidéo</b></a> (2 min 37)</p>
 
 ## Fonctionnalités
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Notes++ en action : menu /, mise en forme, encadrés et thème sombre" width="820">
+</p>
 
 - **Dossiers et sous-dossiers** illimités pour ranger ses cours, avec glisser-déposer, renommage et clic droit.
 - **Mise en forme riche** : titres, gras, italique, souligné, couleurs, surlignage, listes, cases à cocher, citations, code, tableaux, images, liens, alignement.
