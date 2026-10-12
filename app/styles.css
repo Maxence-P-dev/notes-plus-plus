@@ -1467,3 +1467,36 @@ kbd,
     display: none;
   }
 }
+
+/* ---------------------------------------------------------- image bubble */
+
+.img-bubble {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  z-index: 900;
+}
+
+.img-bubble .tb-sep {
+  margin: 0 3px;
+}
+
+.tb-btn.danger:hover:not(:disabled) {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.ProseMirror [data-resize-container][draggable='true'] img {
+  cursor: grab;
+}
+
+/* The selection outline goes around the picture, not the whole line. */
+.ProseMirror [data-resize-container].ProseMirror-selectednode {
+  outline: none;
+}
+
+.ProseMirror [data-resize-container].ProseMirror-selectednode img {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

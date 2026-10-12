@@ -190,6 +190,7 @@ const WELCOME = `<p>Notes++ est ton cahier de cours. Tout est <strong>enregistr�
 <li><p><strong>Glisse-dépose</strong> un cours ou un dossier pour le déplacer.</p></li>
 </ul>
 <h2>Mettre en forme</h2>
+<p>Clique sur une <strong>image</strong> pour la placer à gauche, au centre, à droite, ou avec du texte à côté. Tu peux aussi la redimensionner avec les poignées.</p>
 <p>Du texte en <strong>gras</strong>, en <em>italique</em>, <u>souligné</u>, <mark data-color="rgba(255, 212, 0, 0.4)" style="background-color: rgba(255, 212, 0, 0.4)">surligné</mark> ou en <span style="color: #2f80ed">couleur</span>.</p>
 <div data-callout="definition"><p><strong>Définition :</strong> un encadré met en valeur une notion importante du cours.</p></div>
 <div data-callout="warning"><p><strong>Attention :</strong> les encadrés « attention » sont parfaits pour les pièges à éviter.</p></div>

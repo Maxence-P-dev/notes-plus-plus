@@ -1,7 +1,7 @@
 import { EditorState } from '@tiptap/pm/state';
 import { icon, LOGO } from './icons.js';
 import { $, h, openFloating, closeFloating, isFloatingOpen, menuList, contextMenu, promptModal, confirmModal, toast } from './ui.js';
-import { createEditor, CALLOUTS } from './editor.js';
+import { createEditor, CALLOUTS, IMAGE_ALIGNS } from './editor.js';
 
 const api = window.notesApp;
 
@@ -776,7 +776,52 @@ function updateToolbar() {
     $('#tb-color-bar').style.background = ed.getAttributes('textStyle').color || 'currentColor';
     const align = ALIGNS.find(([v]) => ed.isActive({ textAlign: v }));
     tb.align.el.firstElementChild.outerHTML = icon(align ? align[1] : 'alignLeft', 17);
+    positionImageBubble();
   });
+}
+
+/* ---------------------------------------------------------- image bubble */
+
+let imgBubble;
+
+function buildImageBubble() {
+  imgBubble = h('div', { class: 'floating img-bubble' });
+  imgBubble.addEventListener('mousedown', (e) => e.preventDefault()); // keep the image selected
+  for (const a of IMAGE_ALIGNS) {
+    imgBubble.append(
+      h('button', {
+        class: 'tb-btn',
+        title: a.label,
+        'data-align': a.id,
+        html: icon(a.icon, 17),
+        onclick: () => ed.chain().focus().updateAttributes('image', { align: a.id }).run(),
+      })
+    );
+  }
+  imgBubble.append(
+    h('span', { class: 'tb-sep' }),
+    h('button', { class: 'tb-btn danger', title: 'Supprimer l’image', html: icon('trash', 17), onclick: () => ed.chain().focus().deleteSelection().run() })
+  );
+  document.body.append(imgBubble);
+  $('#scroller').addEventListener('scroll', positionImageBubble, { passive: true });
+  window.addEventListener('resize', positionImageBubble);
+}
+
+function positionImageBubble() {
+  const sel = ed.state.selection;
+  const dom = S.current && sel.node?.type.name === 'image' ? ed.view.nodeDOM(sel.from) : null;
+  if (!dom) return imgBubble.classList.remove('open');
+  const r = (dom.querySelector?.('img') || dom).getBoundingClientRect();
+  const area = $('#scroller').getBoundingClientRect();
+  const b = imgBubble.getBoundingClientRect();
+  if (r.bottom < area.top || r.top > area.bottom) return imgBubble.classList.remove('open');
+  const top = Math.max(area.top + 8, r.top - b.height - 10);
+  const left = Math.min(Math.max(8, r.left + r.width / 2 - b.width / 2), window.innerWidth - b.width - 8);
+  imgBubble.style.top = `${top}px`;
+  imgBubble.style.left = `${left}px`;
+  const current = sel.node.attrs.align || 'center';
+  imgBubble.querySelectorAll('[data-align]').forEach((btn) => btn.classList.toggle('on', btn.dataset.align === current));
+  imgBubble.classList.add('open');
 }
 
 /* ================================================================ layout */
@@ -1117,6 +1162,7 @@ async function init() {
   });
 
   buildToolbar();
+  buildImageBubble();
   setupTitle();
   setupSidebar();
   setupShortcuts();

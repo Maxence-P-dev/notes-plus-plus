@@ -38,6 +38,8 @@ const ICONS = {
   alignCenter: P('M17 12H7', 'M19 18H5', 'M21 6H3'),
   alignRight: P('M21 12H9', 'M21 18H7', 'M21 6H3'),
   alignJustify: P('M3 12h18', 'M3 18h18', 'M3 6h18'),
+  wrapLeft: '<rect width="8" height="8" x="3" y="4" rx="1.5"/>' + P('M15 5h6', 'M15 9h6', 'M15 13h6', 'M3 17h18', 'M3 21h12'),
+  wrapRight: '<rect width="8" height="8" x="13" y="4" rx="1.5"/>' + P('M3 5h6', 'M3 9h6', 'M3 13h6', 'M3 17h18', 'M3 21h12'),
   highlighter: P('m9 11-6 6v3h9l3-3', 'm22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4'),
   eraser: P('m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21', 'M22 21H7', 'm5 11 9 9'),
   trash: P('M3 6h18', 'M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6', 'M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'),

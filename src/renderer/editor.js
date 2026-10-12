@@ -58,6 +58,39 @@ const Callout = Node.create({
   },
 });
 
+export const IMAGE_ALIGNS = [
+  { id: 'left', label: 'Aligner à gauche', icon: 'alignLeft' },
+  { id: 'center', label: 'Centrer', icon: 'alignCenter' },
+  { id: 'right', label: 'Aligner à droite', icon: 'alignRight' },
+  { id: 'wrap-left', label: 'Image à gauche, texte à droite', icon: 'wrapLeft' },
+  { id: 'wrap-right', label: 'Image à droite, texte à gauche', icon: 'wrapRight' },
+];
+
+// Image with a placement: aligned on its own line, or floating with the text flowing beside it.
+const PlacedImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      align: {
+        default: 'center',
+        parseHTML: (el) => el.getAttribute('data-align') || 'center',
+        renderHTML: (attrs) => ({ 'data-align': attrs.align }),
+      },
+    };
+  },
+
+  addNodeView() {
+    const create = this.parent?.();
+    if (!create) return null;
+    return (props) => {
+      const view = create(props);
+      // Lets the image be dragged to another place in the course.
+      view.dom.draggable = true;
+      return view;
+    };
+  },
+});
+
 /* ------------------------------------------------------------ slash menu */
 
 const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -238,7 +271,7 @@ export function createEditor({ element, onUpdate, onTransaction, pickImage }) {
       TableCell,
       TaskList,
       TaskItem.configure({ nested: true }),
-      Image.configure({
+      PlacedImage.configure({
         allowBase64: true,
         resize: { enabled: true, directions: ['bottom-right', 'bottom-left'], minWidth: 60, minHeight: 40, alwaysPreserveAspectRatio: true },
       }),

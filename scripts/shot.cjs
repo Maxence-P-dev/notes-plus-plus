@@ -14,6 +14,7 @@ fs.writeFileSync(path.join(profile, 'settings.json'), JSON.stringify({ root: pat
 const electron = require('electron');
 electron.dialog.showSaveDialog = async () => ({ canceled: false, filePath: path.join(out, 'export.pdf') });
 electron.shell.openPath = async () => '';
+electron.dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [path.join(__dirname, '..', 'docs', 'sample.png')] });
 require('../app/main.js');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 app.on('browser-window-created', (_e, win) => {

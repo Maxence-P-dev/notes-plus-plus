@@ -1,6 +1,6 @@
 {
   "name": "notes-plus-plus",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Notes++ — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
   "main": "app/main.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "watch": "npm run build -- --watch --sourcemap",
     "start": "npm run build && electron .",
     "icons": "node scripts/make-icons.mjs",
-    "dist": "npm run build && electron-builder --win --x64 --publish never"
+    "dist": "npm run build && electron-builder --win --x64 --publish never",
+    "installer-art": "node scripts/make-installer-art.mjs"
   },
   "author": "maxencepialleport",
   "license": "MIT",
@@ -62,7 +63,7 @@
           ]
         }
       ],
-      "artifactName": "NotesPlusPlus-${version}-win-${arch}.${ext}"
+      "artifactName": "NotesPlusPlus-Portable.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -73,8 +74,15 @@
       "shortcutName": "Notes++",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "artifactName": "NotesPlusPlus-Setup-${version}.${ext}",
-      "language": "1036"
+      "artifactName": "NotesPlusPlus-Setup.${ext}",
+      "language": "1036",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/installerSidebar.bmp",
+      "installerHeader": "build/installerHeader.bmp",
+      "include": "build/installer.nsh",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "menuCategory": false
     }
   }
 }

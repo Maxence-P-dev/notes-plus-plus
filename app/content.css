@@ -254,6 +254,71 @@
   display: block;
 }
 
+/* Image placement. In the editor the image sits in a resize container (flex),
+   in exported HTML it is a bare <img>: both cases are styled. */
+.prose img[data-align='center'] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.prose img[data-align='right'] {
+  margin-left: auto;
+}
+
+.prose [data-resize-container]:has(img[data-align='left']) {
+  justify-content: flex-start;
+}
+
+.prose [data-resize-container]:has(img[data-align='center']) {
+  justify-content: center;
+}
+
+.prose [data-resize-container]:has(img[data-align='right']) {
+  justify-content: flex-end;
+}
+
+.prose img[data-align='wrap-left'],
+.prose img[data-align='wrap-right'] {
+  max-width: 50%;
+}
+
+.prose img[data-align='wrap-left'],
+.prose [data-resize-container]:has(img[data-align='wrap-left']) {
+  float: left;
+  margin: 0.35em 1.4em 0.6em 0;
+}
+
+.prose img[data-align='wrap-right'],
+.prose [data-resize-container]:has(img[data-align='wrap-right']) {
+  float: right;
+  margin: 0.35em 0 0.6em 1.4em;
+}
+
+.prose [data-resize-container]:has(img[data-align='wrap-left']),
+.prose [data-resize-container]:has(img[data-align='wrap-right']) {
+  max-width: 50%;
+}
+
+.prose [data-resize-container]:has(img[data-align='wrap-left']) img,
+.prose [data-resize-container]:has(img[data-align='wrap-right']) img {
+  max-width: 100%;
+  float: none;
+  margin: 0;
+}
+
+/* Big titles and separators always start below a floating image. */
+.prose h1,
+.prose h2,
+.prose hr {
+  clear: both;
+}
+
+.prose::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
 /* Callouts */
 .prose .callout {
   --c: var(--c-info);
