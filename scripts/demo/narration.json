@@ -1,0 +1,19 @@
+[
+ {"id":"n00","text":"Voici Notes++, une application gratuite pour Windows qui remplace le Bloc-notes pour prendre tes cours. Dans cette vidéo, je te montre tout ce qu'elle sait faire."},
+ {"id":"n01","text":"Pour l'installer, va sur la page GitHub du projet, dans la section Releases. Télécharge le fichier Notes Plus Plus Setup, lance-le, et suis l'installation. Si Windows affiche un avertissement, clique sur Informations complémentaires, puis sur Exécuter quand même."},
+ {"id":"n02","text":"Au premier lancement, Notes++ ouvre un cours de bienvenue. À gauche, la barre latérale contient tes dossiers et tes cours. Au centre, il y a la page où tu écris, avec la barre d'outils juste au-dessus."},
+ {"id":"n03","text":"Commençons par créer un dossier pour une matière. Clique sur Dossier, tape son nom, puis appuie sur Entrée."},
+ {"id":"n04","text":"Pour faire un sous-dossier, fais un clic droit sur le dossier, puis choisis Nouveau sous-dossier."},
+ {"id":"n05","text":"Maintenant, crée un cours avec le petit bouton plus, à côté du dossier. Le titre du cours est aussi le nom du fichier : il suffit de le taper."},
+ {"id":"n06","text":"Pour mettre en forme, le plus rapide, c'est la barre oblique. Tape slash, et un menu apparaît, avec les titres, les listes, les tableaux et les encadrés. Tape quelques lettres pour filtrer, puis Entrée."},
+ {"id":"n07","text":"Tu peux aussi sélectionner du texte et utiliser la barre d'outils : gras, italique, couleur, ou surligneur, idéal pour faire ressortir les mots importants."},
+ {"id":"n08","text":"Les encadrés sont parfaits pour structurer un cours. Il y en a quatre : Définition, Info, Attention, et À retenir."},
+ {"id":"n09","text":"Tu as aussi les listes à puces, les listes numérotées, les cases à cocher, et les tableaux : choisis simplement la taille dans la grille."},
+ {"id":"n10","text":"Et tout est enregistré automatiquement pendant que tu écris. Regarde en bas à droite : pas besoin de sauvegarder."},
+ {"id":"n11","text":"Pour réorganiser tes cours, glisse-les simplement dans un autre dossier. Le clic droit permet aussi de renommer, ou de supprimer : le fichier part dans la corbeille."},
+ {"id":"n12","text":"Avec Contrôle P, tu recherches un mot dans le titre et dans le contenu de tous tes cours."},
+ {"id":"n13","text":"Notes++ existe en thème clair et en thème sombre. Change-le avec le bouton en haut à droite, ou avec Contrôle Maj L."},
+ {"id":"n14","text":"Le mode concentration, avec la touche F11, cache tout, sauf ta page."},
+ {"id":"n15","text":"Enfin, exporte un cours en PDF avec le bouton de téléchargement, pour l'imprimer ou l'envoyer. La mise en page est propre, au format A4."},
+ {"id":"n16","text":"Tes cours sont de simples fichiers, rangés dans Documents, Mes Cours. Voilà, tu sais tout ! Le lien de téléchargement est dans la description. Bon courage pour tes révisions !"}
+]

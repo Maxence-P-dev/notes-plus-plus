@@ -2,6 +2,12 @@
 
 Notes++ est une application Windows pour prendre ses cours : comme le Bloc-notes, mais avec de la vraie mise en forme, des dossiers et un beau design.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Démonstration de Notes++ : menu /, mise en forme, encadrés et thème sombre" width="900">
+</p>
+
+🎬 **[Regarder la présentation complète en vidéo](https://github.com/Maxence-P-dev/notes-plus-plus/releases/download/v1.0.0/NotesPlusPlus-Presentation.mp4)** (3 min, avec voix off) · **[Télécharger Notes++](https://github.com/Maxence-P-dev/notes-plus-plus/releases/latest)**
+
 ## Fonctionnalités
 
 - **Dossiers et sous-dossiers** illimités pour ranger ses cours, avec glisser-déposer, renommage et clic droit.
@@ -57,6 +63,7 @@ L'application est construite avec Electron et l'éditeur TipTap. Le code est org
 - `app/preload.js` : pont sécurisé entre la fenêtre et le système
 - `src/renderer/` : interface (arborescence, barre d'outils, éditeur, menu `/`)
 - `app/styles.css` et `app/content.css` : thème de l'interface et style des cours
+- `scripts/demo/` : génération automatique de la vidéo de présentation (narration, enregistrement, montage)
 
 ## Licence
 
