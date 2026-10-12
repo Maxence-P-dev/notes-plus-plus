@@ -22,7 +22,7 @@
   <img src="docs/demo.gif" alt="Démonstration de Notes++ : menu /, mise en forme, encadrés et thème sombre" width="900">
 </p>
 
-<p align="center">🎬 <a href="https://github.com/Maxence-P-dev/notes-plus-plus/releases/download/v1.0.0/NotesPlusPlus-Presentation.mp4"><b>Regarder la présentation complète en vidéo</b></a> (3 min, avec voix off)</p>
+<p align="center"><a href="docs/presentation.mp4"><b>Regarder la présentation complète en vidéo</b></a> (3 min, avec voix off)</p>
 
 ## Fonctionnalités
 

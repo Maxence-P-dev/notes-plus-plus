@@ -1,6 +1,6 @@
 {
   "name": "notes-plus-plus",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Notes++ — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
   "main": "app/main.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "icons": "node scripts/make-icons.mjs",
     "dist": "npm run build && electron-builder --win --x64 --publish never",
     "installer-art": "node scripts/make-installer-art.mjs",
-    "dist:mac": "npm run build && electron-builder --mac --publish never"
+    "dist:mac": "npm run build && electron-builder --mac --publish never",
+    "update-feed": "node scripts/update-feed.mjs"
   },
   "author": "maxencepialleport",
   "license": "MIT",
@@ -98,10 +99,8 @@
     },
     "publish": [
       {
-        "provider": "github",
-        "owner": "Maxence-P-dev",
-        "repo": "notes-plus-plus",
-        "releaseType": "release"
+        "provider": "generic",
+        "url": "https://raw.githubusercontent.com/Maxence-P-dev/notes-plus-plus/main/update/"
       }
     ],
     "mac": {

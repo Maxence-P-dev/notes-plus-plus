@@ -424,8 +424,34 @@ function updateError(err) {
   return 'La vérification a échoué. Réessaie plus tard.';
 }
 
+const newer = (a, b) => {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+  return false;
+};
+
+// Mac and portable builds cannot install updates: they only compare with the latest release.
+async function checkLatestRelease() {
+  setUpdate({ state: 'checking', error: null });
+  try {
+    const { net } = require('electron');
+    const res = await net.fetch('https://api.github.com/repos/Maxence-P-dev/notes-plus-plus/releases/latest', { headers: { Accept: 'application/vnd.github+json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { tag_name: tag, published_at: date } = await res.json();
+    const version = String(tag).replace(/^v/, '');
+    if (newer(version, app.getVersion())) setUpdate({ state: 'available', version, date });
+    else setUpdate({ state: 'latest', checkedAt: Date.now() });
+  } catch (err) {
+    setUpdate({ state: 'error', error: updateError(err) });
+  }
+  return update;
+}
+
 async function checkForUpdates() {
-  if (!updater || ['checking', 'downloading', 'ready'].includes(update.state)) return update;
+  if (['checking', 'downloading', 'ready', 'unsupported'].includes(update.state)) return update;
+  if (!update.canInstall) return checkLatestRelease();
+  if (!updater) return update;
   try {
     await updater.checkForUpdates();
   } catch (err) {
@@ -437,6 +463,10 @@ async function checkForUpdates() {
 function setupUpdater() {
   const dev = !app.isPackaged;
   if (dev && !fs.existsSync(DEV_UPDATE_CONFIG)) return setUpdate({ state: 'unsupported' });
+  update.canInstall = dev || isInstalled();
+  setTimeout(checkForUpdates, 4000);
+  setInterval(checkForUpdates, CHECK_EVERY);
+  if (!update.canInstall) return; // Mac / portable: see checkLatestRelease()
   try {
     ({ autoUpdater: updater } = require('electron-updater'));
   } catch {
@@ -449,7 +479,6 @@ function setupUpdater() {
   updater.logger = null;
   updater.autoDownload = false;
   updater.autoInstallOnAppQuit = true;
-  update.canInstall = dev || isInstalled();
 
   updater.on('checking-for-update', () => setUpdate({ state: 'checking', error: null }));
   updater.on('update-available', (info) => setUpdate({ state: 'available', version: info.version, date: info.releaseDate }));
@@ -457,17 +486,14 @@ function setupUpdater() {
   updater.on('download-progress', (p) => setUpdate({ state: 'downloading', percent: Math.round(p.percent) }));
   updater.on('update-downloaded', (info) => setUpdate({ state: 'ready', version: info.version }));
   updater.on('error', (err) => setUpdate({ state: update.state === 'downloading' ? 'available' : 'error', error: updateError(err) }));
-
-  setTimeout(checkForUpdates, 4000);
-  setInterval(checkForUpdates, CHECK_EVERY);
 }
 
 handle('update:get', () => update);
 handle('update:check', () => checkForUpdates());
 
 handle('update:download', async () => {
-  if (!updater || update.state !== 'available') return update;
-  if (!update.canInstall) {
+  if (update.state !== 'available') return update;
+  if (!update.canInstall || !updater) {
     shell.openExternal(`${RELEASES_URL}/latest`);
     return update;
   }
