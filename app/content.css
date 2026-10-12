@@ -1,0 +1,380 @@
+/* Styles of the course content. Shared by the editor and the PDF export. */
+
+:root,
+[data-theme='light'] {
+  --p-text: #1f1f24;
+  --p-text-2: #55555f;
+  --p-text-3: #9a9aa3;
+  --p-border: #e6e6e3;
+  --p-accent: #6d5dfc;
+  --p-accent-text: #5544e6;
+  --p-soft: #f5f5f3;
+  --p-code-bg: #f3f2f7;
+  --p-code-text: #c2255c;
+  --p-pre-bg: #f7f7fa;
+  --p-pre-border: #e8e7ef;
+  --p-th-bg: #f6f5fb;
+  --p-select: rgba(109, 93, 252, 0.14);
+
+  --c-info: #2f80ed;
+  --c-info-bg: rgba(47, 128, 237, 0.08);
+  --c-definition: #7c5cf5;
+  --c-definition-bg: rgba(124, 92, 245, 0.08);
+  --c-warning: #e8740c;
+  --c-warning-bg: rgba(247, 140, 30, 0.1);
+  --c-tip: #22a06b;
+  --c-tip-bg: rgba(34, 160, 107, 0.09);
+}
+
+[data-theme='dark'] {
+  --p-text: #e9e9ee;
+  --p-text-2: #b0b0bb;
+  --p-text-3: #6f6f7a;
+  --p-border: #34343c;
+  --p-accent: #8b7dff;
+  --p-accent-text: #a99fff;
+  --p-soft: #26262c;
+  --p-code-bg: #2b2a33;
+  --p-code-text: #ff8fb8;
+  --p-pre-bg: #141418;
+  --p-pre-border: #2c2c34;
+  --p-th-bg: #26252e;
+  --p-select: rgba(139, 125, 255, 0.22);
+
+  --c-info: #5ea2ff;
+  --c-info-bg: rgba(94, 162, 255, 0.1);
+  --c-definition: #a48bff;
+  --c-definition-bg: rgba(164, 139, 255, 0.1);
+  --c-warning: #ffa04d;
+  --c-warning-bg: rgba(255, 160, 77, 0.1);
+  --c-tip: #4cc98f;
+  --c-tip-bg: rgba(76, 201, 143, 0.1);
+}
+
+.prose {
+  color: var(--p-text);
+  font-size: calc(16.5px * var(--zoom, 1));
+  line-height: 1.72;
+  word-wrap: break-word;
+  font-feature-settings: 'kern', 'liga';
+}
+
+.prose > * + * {
+  margin-top: 0.6em;
+}
+
+.prose p {
+  margin: 0.5em 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--p-text);
+}
+
+.prose h1 {
+  font-size: 1.85em;
+  font-weight: 700;
+  margin: 1.4em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--p-border);
+}
+
+/* The accent bar is a background so ::before stays free for the placeholder. */
+.prose h2 {
+  font-size: 1.42em;
+  font-weight: 650;
+  margin: 1.35em 0 0.45em;
+  padding-left: 0.7em;
+  background: linear-gradient(var(--p-accent), var(--p-accent)) left center / 4px 72% no-repeat;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.prose h3 {
+  font-size: 1.16em;
+  font-weight: 650;
+  margin: 1.2em 0 0.35em;
+  color: var(--p-accent-text);
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose strong {
+  font-weight: 650;
+}
+
+.prose a {
+  color: var(--p-accent-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--p-accent-text) 40%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--p-accent-text);
+}
+
+.prose mark {
+  color: inherit;
+  border-radius: 4px;
+  padding: 0.05em 0.18em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-color: rgba(255, 212, 0, 0.4);
+}
+
+.prose code {
+  font-family: 'Cascadia Code', 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.86em;
+  background: var(--p-code-bg);
+  color: var(--p-code-text);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+}
+
+.prose pre {
+  background: var(--p-pre-bg);
+  border: 1px solid var(--p-pre-border);
+  border-radius: 10px;
+  padding: 0.9em 1.1em;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+
+.prose pre code {
+  background: none;
+  color: var(--p-text);
+  padding: 0;
+  font-size: 0.85em;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.55em;
+  margin: 0.5em 0;
+}
+
+.prose li {
+  margin: 0.15em 0;
+}
+
+.prose li > p {
+  margin: 0.1em 0;
+}
+
+.prose li::marker {
+  color: var(--p-accent);
+}
+
+.prose ol > li::marker {
+  font-weight: 600;
+}
+
+.prose ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+
+.prose ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+}
+
+.prose ul[data-type='taskList'] li > label {
+  flex: none;
+  margin-top: 0.28em;
+  user-select: none;
+}
+
+.prose ul[data-type='taskList'] li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.prose ul[data-type='taskList'] input[type='checkbox'] {
+  appearance: none;
+  width: 1.05em;
+  height: 1.05em;
+  border: 1.6px solid var(--p-text-3);
+  border-radius: 5px;
+  margin: 0;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.prose ul[data-type='taskList'] input[type='checkbox']:checked {
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+}
+
+.prose ul[data-type='taskList'] input[type='checkbox']:checked::after {
+  content: '';
+  width: 0.32em;
+  height: 0.58em;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-0.06em) rotate(45deg);
+}
+
+.prose ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: var(--p-text-3);
+  text-decoration: line-through;
+}
+
+.prose blockquote {
+  margin: 0.9em 0;
+  padding: 0.25em 0 0.25em 1.1em;
+  border-left: 3px solid var(--p-accent);
+  color: var(--p-text-2);
+  font-style: italic;
+}
+
+.prose hr {
+  border: none;
+  height: 1px;
+  background: var(--p-border);
+  margin: 2em 0;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+
+/* Callouts */
+.prose .callout {
+  --c: var(--c-info);
+  --c-bg: var(--c-info-bg);
+  position: relative;
+  margin: 1em 0;
+  padding: 0.75em 1.1em 0.8em;
+  border-radius: 12px;
+  background: var(--c-bg);
+  border: 1px solid color-mix(in srgb, var(--c) 22%, transparent);
+  border-left: 4px solid var(--c);
+}
+
+.prose .callout::before {
+  display: block;
+  margin-bottom: 0.15em;
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c);
+  user-select: none;
+  pointer-events: none;
+}
+
+.prose .callout > :first-child {
+  margin-top: 0;
+}
+.prose .callout > :last-child {
+  margin-bottom: 0;
+}
+
+.prose .callout[data-callout='info'] {
+  --c: var(--c-info);
+  --c-bg: var(--c-info-bg);
+}
+.prose .callout[data-callout='info']::before {
+  content: 'ⓘ  Info';
+}
+.prose .callout[data-callout='definition'] {
+  --c: var(--c-definition);
+  --c-bg: var(--c-definition-bg);
+}
+.prose .callout[data-callout='definition']::before {
+  content: '✎  Définition';
+}
+.prose .callout[data-callout='warning'] {
+  --c: var(--c-warning);
+  --c-bg: var(--c-warning-bg);
+}
+.prose .callout[data-callout='warning']::before {
+  content: '⚠  Attention';
+}
+.prose .callout[data-callout='tip'] {
+  --c: var(--c-tip);
+  --c-bg: var(--c-tip-bg);
+}
+.prose .callout[data-callout='tip']::before {
+  content: '★  À retenir';
+}
+
+/* Tables */
+.prose .tableWrapper {
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.prose table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  table-layout: fixed;
+  border: 1px solid var(--p-border);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.95em;
+}
+
+.prose th,
+.prose td {
+  position: relative;
+  border-right: 1px solid var(--p-border);
+  border-bottom: 1px solid var(--p-border);
+  padding: 0.5em 0.75em;
+  vertical-align: top;
+  text-align: left;
+  min-width: 3em;
+}
+
+.prose tr > :last-child {
+  border-right: none;
+}
+
+.prose tr:last-child > * {
+  border-bottom: none;
+}
+
+.prose th {
+  background: var(--p-th-bg);
+  font-weight: 650;
+}
+
+.prose th > p,
+.prose td > p {
+  margin: 0;
+}
+
+/* Printing / PDF */
+@media print {
+  .prose {
+    font-size: 11pt;
+  }
+  .prose h1,
+  .prose h2,
+  .prose h3 {
+    break-after: avoid;
+  }
+  .prose .callout,
+  .prose pre,
+  .prose img,
+  .prose tr {
+    break-inside: avoid;
+  }
+}

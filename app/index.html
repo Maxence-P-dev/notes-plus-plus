@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: file:; font-src 'self' data:" />
+    <title>Iris</title>
+    <link rel="stylesheet" href="content.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="titlebar">
+      <div class="brand" id="brand"></div>
+      <button class="icon-btn no-drag" id="btn-sidebar" title="Afficher / masquer la barre latérale (Ctrl+\)"></button>
+      <nav class="crumbs no-drag" id="crumbs"></nav>
+      <div class="tb-spacer"></div>
+      <div class="tb-actions no-drag">
+        <button class="icon-btn" id="btn-focus" title="Mode concentration (F11)"></button>
+        <button class="icon-btn" id="btn-pdf" title="Exporter en PDF (Ctrl+Maj+E)"></button>
+        <button class="icon-btn" id="btn-theme" title="Thème (Ctrl+Maj+L)"></button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sb-top">
+          <label class="search">
+            <span id="search-ic"></span>
+            <input id="search" type="text" placeholder="Rechercher…" spellcheck="false" />
+            <span class="kbd">Ctrl P</span>
+          </label>
+          <div class="sb-buttons">
+            <button class="btn primary sm" id="new-file"></button>
+            <button class="btn soft sm" id="new-folder"></button>
+          </div>
+        </div>
+        <div class="sb-label"><span id="sb-label-text">Mes cours</span></div>
+        <div class="tree" id="tree" tabindex="0"></div>
+        <div class="sb-footer">
+          <button class="root-btn" id="root-btn"></button>
+        </div>
+      </aside>
+      <div class="resizer" id="resizer"></div>
+
+      <main class="main">
+        <section class="empty" id="empty"></section>
+        <section class="doc" id="doc" hidden>
+          <div class="toolbar" id="toolbar"></div>
+          <div class="scroller" id="scroller">
+            <article class="page">
+              <div class="doc-path" id="doc-path"></div>
+              <textarea class="doc-title" id="title" rows="1" spellcheck="false" placeholder="Sans titre"></textarea>
+              <div id="editor" class="prose"></div>
+            </article>
+          </div>
+          <footer class="statusbar" id="status">
+            <span id="st-count"></span>
+            <span class="st-spacer"></span>
+            <span id="st-zoom" title="Zoom : Ctrl + / Ctrl −"></span>
+            <span id="st-save" class="st-save"></span>
+          </footer>
+        </section>
+      </main>
+    </div>
+
+    <script src="dist/renderer.js"></script>
+  </body>
+</html>

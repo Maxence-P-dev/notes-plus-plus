@@ -1,0 +1,80 @@
+{
+  "name": "iris-notes",
+  "version": "1.0.0",
+  "description": "Iris — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
+  "main": "app/main.js",
+  "scripts": {
+    "build": "esbuild src/renderer/app.js --bundle --minify --format=iife --target=chrome130 --outfile=app/dist/renderer.js",
+    "watch": "npm run build -- --watch --sourcemap",
+    "start": "npm run build && electron .",
+    "icons": "node scripts/make-icons.mjs",
+    "dist": "npm run build && electron-builder --win --x64 --publish never"
+  },
+  "author": "maxencepialleport",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.5",
+    "@tiptap/core": "^3.31.4",
+    "@tiptap/extension-highlight": "^3.31.4",
+    "@tiptap/extension-image": "^3.31.4",
+    "@tiptap/extension-list": "^3.31.4",
+    "@tiptap/extension-table": "^3.31.4",
+    "@tiptap/extension-text-align": "^3.31.4",
+    "@tiptap/extension-text-style": "^3.31.4",
+    "@tiptap/extensions": "^3.31.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "productName": "Iris",
+  "build": {
+    "appId": "com.iris.notes",
+    "productName": "Iris",
+    "copyright": "© 2026 Iris",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "app/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Iris-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Iris",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "Iris-Setup-${version}.${ext}",
+      "language": "1036"
+    }
+  }
+}
