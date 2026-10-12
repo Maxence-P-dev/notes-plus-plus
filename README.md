@@ -35,6 +35,9 @@
 - **Enregistrement automatique** pendant que tu écris.
 - **Recherche** dans les titres et dans le contenu de tous les cours (`Ctrl+P`).
 - **Export PDF** propre, au format A4 et paginé (`Ctrl+Maj+E`).
+- **Intelligence artificielle (Claude)** : correction des fautes avec explication de chaque règle, schémas générés à partir du cours (carte mentale, frise, étapes, cycle, comparaison, organigramme, fiches) et illustrations dessinées sur demande. Nécessite ta propre clé API Claude.
+- **Formes libres** : rectangles, cercles, bulles, flèches, étoiles… à placer, redimensionner, colorer et remplir de texte.
+- **Paramètres** : couleur principale de l’appli (10 couleurs ou la tienne), police des cours (moderne, classique, manuscrite), taille du texte.
 - **Mises à jour automatiques** : Notes++ te prévient quand une nouvelle version sort, et l’installe en un clic.
 - **Mode concentration** en plein écran (`F11`), zoom (`Ctrl +` / `Ctrl −`), correcteur orthographique en français.
 

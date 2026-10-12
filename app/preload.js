@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const invoke = (channel) => (...args) => ipcRenderer.invoke(channel, ...args);
 
 contextBridge.exposeInMainWorld('notesApp', {
+  platform: process.platform,
   getSettings: invoke('settings:get'),
   setSettings: invoke('settings:set'),
   chooseRoot: invoke('root:choose'),
@@ -28,6 +29,15 @@ contextBridge.exposeInMainWorld('notesApp', {
     download: invoke('update:download'),
     install: invoke('update:install'),
     notes: invoke('update:notes'),
+  },
+  ai: {
+    status: invoke('ai:status'),
+    setKey: invoke('ai:setKey'),
+    clearKey: invoke('ai:clearKey'),
+    cancel: invoke('ai:cancel'),
+    correct: invoke('ai:correct'),
+    diagram: invoke('ai:diagram'),
+    illustration: invoke('ai:illustration'),
   },
   onUpdate: (cb) => ipcRenderer.on('update:status', (_e, s) => cb(s)),
   onSystemTheme: (cb) => ipcRenderer.on('theme:system', (_e, t) => cb(t)),

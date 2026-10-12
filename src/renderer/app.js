@@ -3,6 +3,9 @@ import { icon, LOGO } from './icons.js';
 import { $, h, openFloating, closeFloating, isFloatingOpen, menuList, contextMenu, promptModal, confirmModal, toast } from './ui.js';
 import { createEditor, CALLOUTS, IMAGE_ALIGNS } from './editor.js';
 import { setupUpdates, openAbout } from './update.js';
+import { openSettings, applyLook } from './settings.js';
+import { correct, diagramDialog, illustrationDialog, setSettingsOpener } from './ai-ui.js';
+import { DIAGRAM_KINDS, PALETTES, insertBlock } from './blocks.js';
 
 const api = window.notesApp;
 
@@ -39,6 +42,20 @@ function applyTheme(effective, animate = false) {
 async function setTheme(theme) {
   S.settings = await api.setSettings({ theme });
   applyTheme(S.settings.effectiveTheme, true);
+}
+
+function openAppSettings(section) {
+  openSettings({
+    settings: S.settings,
+    section,
+    root: S.root,
+    setSettings: async (patch) => (S.settings = await api.setSettings(patch)),
+    setTheme: (t) => setTheme(t),
+    getZoom: () => S.zoom,
+    setZoom: (z) => setZoom(z),
+    chooseRoot,
+    openAbout,
+  });
 }
 
 function toggleTheme() {
@@ -651,7 +668,7 @@ async function editLink() {
 
 async function insertImage() {
   const src = await api.pickImage();
-  if (src) chain().setImage({ src }).run();
+  if (src) chain().command(({ state, commands }) => insertBlock(state, commands, { type: 'image', attrs: { src } })).run();
   else ed.commands.focus();
 }
 
@@ -741,10 +758,29 @@ function buildToolbar() {
     tbButton('table', { icon: 'table', title: 'Tableau', active: () => ed.isActive('table'), popup: () => (ed.isActive('table') ? tableMenu() : tableGrid()) }),
     tbButton('image', { icon: 'image', title: 'Insérer une image', run: insertImage }),
     tbButton('link', { icon: 'link', title: 'Lien (Ctrl+K)', active: () => ed.isActive('link'), run: () => linkAction() }),
-    tbButton('hr', { icon: 'minus', title: 'Séparateur', run: () => chain().setHorizontalRule().run() }),
     sep(),
-    tbButton('clear', { icon: 'eraser', title: 'Effacer la mise en forme', run: () => chain().unsetAllMarks().clearNodes().run() })
+    tbButton('clear', { icon: 'eraser', title: 'Effacer la mise en forme', run: () => chain().unsetAllMarks().clearNodes().run() }),
+    sep(),
+    aiButton()
   );
+}
+
+function aiButton() {
+  const el = tbButton('ai', {
+    html: icon('sparkle', 16) + '<span class="tb-text">IA</span>',
+    title: 'Intelligence artificielle',
+    popup: () =>
+      menuList([
+        { label: 'Corriger les fautes', icon: 'spell', kbd: 'Ctrl Maj O', action: () => correct(ed) },
+        { label: 'Insérer un schéma…', icon: 'diagram', action: () => diagramDialog(ed) },
+        { label: 'Créer une illustration…', icon: 'image', action: () => illustrationDialog(ed) },
+        { label: 'Zone de formes', icon: 'shapes', action: () => chain().insertShapeBoard().run() },
+        'sep',
+        { label: 'Réglages de l’IA', icon: 'gear', action: () => openAppSettings('ai') },
+      ]),
+  });
+  el.classList.add('tb-ai');
+  return el;
 }
 
 function linkAction() {
@@ -778,6 +814,7 @@ function updateToolbar() {
     const align = ALIGNS.find(([v]) => ed.isActive({ textAlign: v }));
     tb.align.el.firstElementChild.outerHTML = icon(align ? align[1] : 'alignLeft', 17);
     positionImageBubble();
+    positionDiagramBubble();
   });
 }
 
@@ -806,6 +843,89 @@ function buildImageBubble() {
   document.body.append(imgBubble);
   $('#scroller').addEventListener('scroll', positionImageBubble, { passive: true });
   window.addEventListener('resize', positionImageBubble);
+}
+
+/* -------------------------------------------------------- diagram bubble */
+
+let dgBubble;
+
+function buildDiagramBubble() {
+  const btn = (label, ic, onclick, cls = '') => {
+    const b = h('button', { class: 'tb-btn ' + cls, title: label, html: icon(ic, 16) + (cls.includes('txt') ? '<span class="tb-text">' + label + '</span>' : '') });
+    b.addEventListener('click', () => onclick(b));
+    return b;
+  };
+  const current = () => {
+    const sel = ed.state.selection;
+    return sel.node?.type.name === 'diagram' ? { pos: sel.from, node: sel.node } : null;
+  };
+  const update = (fn) => {
+    const c = current();
+    if (!c) return;
+    const attrs = structuredClone(c.node.attrs);
+    fn(attrs);
+    ed.view.dispatch(ed.state.tr.setNodeMarkup(c.pos, undefined, attrs));
+  };
+  const pop = (anchor, content) => openFloating(content, { anchor }, { cls: 'tb-pop' });
+  const withPoints = (kind) => ['comparison', 'mindmap', 'hierarchy'].includes(kind);
+  const withText = (kind) => ['timeline', 'steps', 'cards'].includes(kind);
+  dgBubble = h(
+    'div',
+    { class: 'floating img-bubble dg-bubble' },
+    btn('Type de schéma', 'diagram', (b) =>
+      pop(b, menuList(DIAGRAM_KINDS.map((k) => ({ label: k.label, active: current()?.node.attrs.kind === k.id, action: () => update((a) => (a.kind = k.id)) }))))
+    ),
+    btn('Couleurs', 'palette', (b) =>
+      pop(
+        b,
+        h(
+          'div',
+          { class: 'pop-pad palettes' },
+          h('div', { class: 'pop-title' }, 'Couleurs'),
+          Object.entries(PALETTES).map(([id, colors]) =>
+            h(
+              'button',
+              { class: 'pal-row' + (current()?.node.attrs.palette === id ? ' on' : ''), onclick: () => (closeFloating(), update((a) => (a.palette = id))) },
+              colors.map((c) => h('i', { style: 'background:' + c }))
+            )
+          )
+        )
+      )
+    ),
+    h('span', { class: 'tb-sep' }),
+    btn('Ajouter une case', 'plus', () =>
+      update((a) => a.items.push({ title: 'Nouveau', text: withText(a.kind) ? 'Texte' : '', children: withPoints(a.kind) ? ['Point'] : [] }))
+    ),
+    btn('Retirer la dernière case', 'minus', () => update((a) => a.items.length > 1 && a.items.pop())),
+    btn('Ajouter un point à chaque case', 'list', () => update((a) => a.items.forEach((it) => (it.children = [...(it.children || []), 'Point'])))),
+    h('span', { class: 'tb-sep' }),
+    btn(
+      'Régénérer',
+      'sparkle',
+      () => {
+        const c = current();
+        if (c) diagramDialog(ed, { kind: c.node.attrs.kind, replace: c.pos, request: c.node.attrs.title });
+      },
+      'txt'
+    ),
+    btn('Supprimer le schéma', 'trash', () => ed.chain().focus().deleteSelection().run(), 'danger')
+  );
+  dgBubble.addEventListener('mousedown', (e) => e.preventDefault());
+  document.body.append(dgBubble);
+  $('#scroller').addEventListener('scroll', positionDiagramBubble, { passive: true });
+}
+
+function positionDiagramBubble() {
+  const sel = ed.state.selection;
+  const dom = S.current && sel.node?.type.name === 'diagram' ? ed.view.nodeDOM(sel.from) : null;
+  if (!dom) return dgBubble.classList.remove('open');
+  const r = dom.getBoundingClientRect();
+  const area = $('#scroller').getBoundingClientRect();
+  const b = dgBubble.getBoundingClientRect();
+  if (r.bottom < area.top || r.top > area.bottom) return dgBubble.classList.remove('open');
+  dgBubble.style.top = Math.max(area.top + 8, r.top - b.height - 10) + 'px';
+  dgBubble.style.left = Math.min(Math.max(8, r.left + r.width / 2 - b.width / 2), window.innerWidth - b.width - 8) + 'px';
+  dgBubble.classList.add('open');
 }
 
 function positionImageBubble() {
@@ -998,6 +1118,7 @@ function setupSidebar() {
         { label: 'Ouvrir dans l’explorateur', icon: 'external', action: () => api.reveal('') },
         { label: 'Changer de dossier…', icon: 'folder', action: chooseRoot },
         'sep',
+        { label: 'Paramètres', icon: 'gear', kbd: 'Ctrl ,', action: () => openAppSettings() },
         { label: 'À propos et mises à jour', icon: 'info', action: openAbout },
       ]),
       { anchor: btn }
@@ -1037,7 +1158,7 @@ async function exportPdf() {
   await flushSave();
   setSaveState('saving');
   try {
-    const file = await api.exportPdf(baseName(S.current), ed.getHTML());
+    const file = await api.exportPdf(baseName(S.current), ed.getHTML(), { accent: S.settings.accent, font: S.settings.font });
     if (file) toast('PDF exporté');
   } catch {
     toast('Export PDF impossible', 'error');
@@ -1090,6 +1211,8 @@ function setupShortcuts() {
       return;
     }
     if (mod && e.shiftKey && k === 'l') return e.preventDefault(), toggleTheme();
+    if (mod && e.key === ',') return e.preventDefault(), openAppSettings();
+    if (mod && e.shiftKey && k === 'o' && S.current) return e.preventDefault(), correct(ed);
     if (mod && e.shiftKey && k === 'e') return e.preventDefault(), exportPdf();
     if (mod && e.key === '\\') return e.preventDefault(), toggleSidebar();
     if (mod && k === 's') {
@@ -1122,9 +1245,12 @@ function setupShortcuts() {
 /* ================================================================== init */
 
 async function init() {
+  document.body.classList.add(`platform-${api.platform}`);
   S.settings = await api.getSettings();
   S.expanded = new Set(S.settings.expanded || []);
   applyTheme(S.settings.effectiveTheme);
+  applyLook(S.settings);
+  setSettingsOpener((section) => openAppSettings(section));
   api.onSystemTheme((t) => S.settings.theme === 'system' && applyTheme(t, true));
   api.onFullscreen((on) => !on && document.body.classList.remove('focus-mode'));
 
@@ -1144,10 +1270,17 @@ async function init() {
   $('#btn-focus').addEventListener('click', toggleFocus);
   $('#btn-pdf').addEventListener('click', exportPdf);
   $('#btn-theme').addEventListener('click', (e) => themeMenu(e.currentTarget));
+  $('#btn-settings').innerHTML = icon('gear');
+  $('#btn-settings').addEventListener('click', () => openAppSettings());
 
   ({ editor: ed, slash } = createEditor({
     element: $('#editor'),
-    pickImage: insertImage,
+    actions: {
+      pickImage: insertImage,
+      diagram: () => diagramDialog(ed),
+      illustration: () => illustrationDialog(ed),
+      correct: () => correct(ed),
+    },
     onUpdate: () => {
       scheduleSave();
       updateStatus();
@@ -1168,6 +1301,7 @@ async function init() {
 
   buildToolbar();
   buildImageBubble();
+  buildDiagramBubble();
   setupTitle();
   setupSidebar();
   setupShortcuts();

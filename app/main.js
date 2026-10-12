@@ -1,6 +1,7 @@
 'use strict';
 
 const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme, Menu } = require('electron');
+const ai = require('./ai');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -229,7 +230,7 @@ function handle(channel, fn) {
 handle('settings:get', () => ({ ...settings, effectiveTheme: effectiveTheme() }));
 
 handle('settings:set', (patch) => {
-  const allowed = ['theme', 'lastFile', 'expanded', 'sidebarWidth'];
+  const allowed = ['theme', 'lastFile', 'expanded', 'sidebarWidth', 'accent', 'font'];
   for (const k of allowed) if (k in patch) settings[k] = patch[k];
   saveSettings();
   if ('theme' in patch) {
@@ -343,7 +344,8 @@ handle('image:pick', async () => {
   return `data:${mime};base64,${data.toString('base64')}`;
 });
 
-handle('export:pdf', async (title, bodyHtml) => {
+// look: { accent, font } so the PDF matches the chosen appearance.
+handle('export:pdf', async (title, bodyHtml, look = {}) => {
   const r = await dialog.showSaveDialog(win, {
     title: 'Exporter en PDF',
     defaultPath: path.join(app.getPath('documents'), `${cleanName(title) || 'cours'}.pdf`),
@@ -353,7 +355,9 @@ handle('export:pdf', async (title, bodyHtml) => {
 
   const css = await fsp.readFile(path.join(__dirname, 'content.css'), 'utf8');
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const html = `<!doctype html><html data-theme="light"><head><meta charset="utf-8"><title>${esc(title)}</title>
+  const accent = /^#[0-9a-f]{6}$/i.test(look.accent || '') ? look.accent : null;
+  const font = ['modern', 'classic', 'hand'].includes(look.font) ? look.font : 'modern';
+  const html = `<!doctype html><html data-theme="light" data-font="${font}"${accent ? ` data-accent style="--accent-base:${accent}"` : ''}><head><meta charset="utf-8"><title>${esc(title)}</title>
 <style>${css}
 html,body{background:#fff;margin:0}
 body{padding:0 4px;font-family:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif}
@@ -497,7 +501,8 @@ function createWindow() {
     title: 'Notes++',
     backgroundColor: THEME_COLORS[theme].color,
     titleBarStyle: 'hidden',
-    titleBarOverlay: { ...THEME_COLORS[theme], height: 44 },
+    titleBarOverlay: process.platform === 'win32' ? { ...THEME_COLORS[theme], height: 44 } : undefined,
+    trafficLightPosition: { x: 16, y: 15 },
     icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -573,7 +578,11 @@ if (!app.requestSingleInstanceLock()) {
     win.focus();
   });
   app.whenReady().then(() => {
-    Menu.setApplicationMenu(null);
+    // macOS needs an Edit menu for Cmd+C / Cmd+V to work; Windows needs none.
+    Menu.setApplicationMenu(
+      process.platform === 'darwin' ? Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]) : null
+    );
+    ai.register();
     createWindow();
     setupUpdater();
   });

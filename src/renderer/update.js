@@ -43,7 +43,7 @@ function statusBlock() {
       ];
     case 'available':
       return [
-        row('new', 'sparkle', `Nouvelle version disponible : ${version}`, error || (canInstall ? 'Elle se télécharge en quelques secondes, puis s’installe au redémarrage. Tes cours ne sont pas touchés.' : 'Tu utilises la version portable : télécharge la nouvelle version depuis GitHub.')),
+        row('new', 'sparkle', `Nouvelle version disponible : ${version}`, error || (canInstall ? 'Elle se télécharge en quelques secondes, puis s’installe au redémarrage. Tes cours ne sont pas touchés.' : (window.notesApp.platform === 'darwin' ? 'Sur Mac, télécharge la nouvelle version depuis GitHub et remplace l’ancienne dans Applications.' : 'Tu utilises la version portable : télécharge la nouvelle version depuis GitHub.'))),
         h(
           'div',
           { class: 'up-actions' },

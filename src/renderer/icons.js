@@ -57,6 +57,13 @@ const ICONS = {
   palette: P('M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z') +
     '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
   hardDrive: P('M22 12H2', 'M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z', 'M6 16h.01', 'M10 16h.01'),
+  gear: P('M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z') + '<circle cx="12" cy="12" r="3"/>',
+  shapes: '<rect x="3" y="3" width="8" height="8" rx="1.5"/><circle cx="17" cy="7" r="4"/>' + P('M12 13.5 16.5 21h-9z'),
+  diagram: '<rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/>' + P('M12 7v5', 'M5 17v-2a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v2'),
+  wand: P('m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72', 'm14 7 3 3', 'M5 6v4', 'M19 14v4', 'M10 2v2', 'M7 8H3', 'M21 16h-4', 'M11 3H9'),
+  spell: P('m6 16 6-12 6 12', 'M8 12h8', 'm16 20 2 2 4-4'),
+  key: P('m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4', 'm21 2-9.6 9.6') + '<circle cx="7.5" cy="15.5" r="5.5"/>',
+  type: P('M4 7V4h16v3', 'M9 20h6', 'M12 4v16'),
   rowsPlus: P('M3 12h18', 'M12 3v6', 'M9 6h6') + '<rect width="18" height="18" x="3" y="3" rx="2"/>',
 };
 
@@ -65,8 +72,8 @@ export function icon(name, size = 18, cls = '') {
 }
 
 export const LOGO = `<svg class="logo" width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">
-<defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7dff"/><stop offset="1" stop-color="#5b3df5"/></linearGradient></defs>
+<defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--logo-a)"/><stop offset="1" style="stop-color:var(--logo-b)"/></linearGradient></defs>
 <rect width="64" height="64" rx="16" fill="url(#lg)"/>
 <path d="M20 17h17a8 8 0 0 1 8 8v22H28a8 8 0 0 1-8-8z" fill="#fff" opacity=".95"/>
-<path d="M27 27h11M27 33h11M27 39h7" stroke="#6d5dfc" stroke-width="3" stroke-linecap="round"/>
+<path d="M27 27h11M27 33h11M27 39h7" style="stroke:var(--logo-b)" stroke-width="3" stroke-linecap="round"/>
 </svg>`;

@@ -10,6 +10,7 @@ import { Placeholder, CharacterCount } from '@tiptap/extensions';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { icon } from './icons.js';
 import { h } from './ui.js';
+import { Diagram, ShapeBoard } from './blocks.js';
 
 export const CALLOUTS = [
   { id: 'info', label: 'Info', icon: 'info' },
@@ -95,7 +96,9 @@ const PlacedImage = Image.extend({
 
 const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-function slashItems(pickImage) {
+function slashItems(actions) {
+  const pickImage = actions.pickImage;
+  const later = (fn) => (c) => (setTimeout(fn), c);
   return [
     { label: 'Texte', hint: 'Paragraphe simple', icon: 'pilcrow', k: 'texte paragraphe p', run: (c) => c.setParagraph() },
     { label: 'Titre 1', hint: 'Grand titre de section', badge: 'H1', k: 'titre h1 heading', run: (c) => c.setHeading({ level: 1 }) },
@@ -117,11 +120,15 @@ function slashItems(pickImage) {
     { label: 'Tableau', hint: '3 × 3 avec en-tête', icon: 'table', k: 'tableau table grille', run: (c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }) },
     { label: 'Image', hint: 'Depuis ton ordinateur', icon: 'image', k: 'image photo picture', run: (c) => (pickImage(), c) },
     { label: 'Séparateur', hint: 'Ligne horizontale', icon: 'minus', k: 'separateur ligne hr divider', run: (c) => c.setHorizontalRule() },
+    { label: 'Schéma', hint: 'Carte mentale, frise, étapes… avec l’IA', icon: 'diagram', cls: 'sw-ai', k: 'schema diagramme carte mentale frise chronologique etapes cycle comparaison organigramme fiches ia', run: later(actions.diagram) },
+    { label: 'Formes', hint: 'Rectangles, bulles, flèches à remplir', icon: 'shapes', k: 'formes shapes rectangle cercle bulle fleche dessin', run: (c) => c.insertShapeBoard() },
+    { label: 'Illustration IA', hint: 'Claude dessine ce que tu décris', icon: 'sparkle', cls: 'sw-ai', k: 'illustration image dessin ia generer', run: later(actions.illustration) },
+    { label: 'Corriger les fautes', hint: 'Claude relit tout le cours', icon: 'spell', cls: 'sw-ai', k: 'corriger fautes orthographe grammaire ia', run: later(actions.correct) },
   ];
 }
 
-function createSlash(getEditor, pickImage) {
-  const items = slashItems(pickImage);
+function createSlash(getEditor, actions) {
+  const items = slashItems(actions);
   const state = { open: false, range: null, list: [], index: 0, dismissed: null };
   const el = h('div', { class: 'floating slash' });
   el.addEventListener('mousedown', (e) => e.preventDefault());
@@ -238,9 +245,9 @@ function readImage(file) {
   });
 }
 
-export function createEditor({ element, onUpdate, onTransaction, pickImage }) {
+export function createEditor({ element, onUpdate, onTransaction, actions }) {
   let editor;
-  const slash = createSlash(() => editor, pickImage);
+  const slash = createSlash(() => editor, actions);
 
   const insertFiles = async (files, pos) => {
     const images = [...files].filter((f) => f.type.startsWith('image/'));
@@ -276,6 +283,8 @@ export function createEditor({ element, onUpdate, onTransaction, pickImage }) {
         resize: { enabled: true, directions: ['bottom-right', 'bottom-left'], minWidth: 60, minHeight: 40, alwaysPreserveAspectRatio: true },
       }),
       Callout,
+      Diagram,
+      ShapeBoard,
       Placeholder.configure({
         includeChildren: false,
         placeholder: ({ node, editor: ed }) => {
