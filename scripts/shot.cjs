@@ -11,7 +11,11 @@ process.on('uncaughtException', (err) => {
 });
 const steps = process.argv[3] && fs.existsSync(process.argv[3]) ? JSON.parse(fs.readFileSync(process.argv[3], 'utf8')) : [];
 const profile = path.join(out, 'profile');
-fs.rmSync(profile, { recursive: true, force: true });
+// SHOT_KEEP=1 keeps downloaded AI models between runs; notes and settings are always reset.
+if (process.env.SHOT_KEEP) {
+  fs.rmSync(path.join(profile, 'Mes Cours'), { recursive: true, force: true });
+  fs.rmSync(path.join(profile, 'settings.json'), { force: true });
+} else fs.rmSync(profile, { recursive: true, force: true });
 fs.mkdirSync(profile, { recursive: true });
 app.setPath('userData', profile);
 fs.writeFileSync(path.join(profile, 'settings.json'), JSON.stringify({ root: path.join(profile, 'Mes Cours'), theme: 'light', bounds: { width: 1400, height: 900 } }));
@@ -22,24 +26,24 @@ electron.shell.openPath = async () => '';
 electron.dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [path.join(__dirname, '..', 'docs', 'sample.png')] });
 require('../app/main.js');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-// MOCK_AI=1 replaces the Claude calls with canned answers (no key, no cost).
+// MOCK_AI=1 replaces the local AI with canned answers (no model needed, instant).
 function mockAi() {
   const { ipcMain } = require('electron');
   const reply = (ch, fn) => { ipcMain.removeHandler(ch); ipcMain.handle(ch, async (_e, ...a) => { await wait(600); return { ok: true, value: fn(...a) }; }); };
-  reply('ai:status', () => ({ configured: true, model: 'claude-opus-5-5' }));
-  reply('ai:correct', (_id, text) => [
+  reply('llm:status', () => ({ models: [], active: 'standard', download: null, gpu: null }));
+  reply('llm:correct', (_id, text) => [
     { original: 'Les plante', replacement: 'Les plantes', reason: 'accord du nom au pluriel' },
     { original: 'grace', replacement: 'grâce', reason: 'accent circonflexe' },
     { original: 'ils produise', replacement: 'ils produisent', reason: 'conjugaison au présent (3e personne du pluriel)' },
   ].filter((c) => text.includes(c.original)));
-  reply('ai:diagram', (_id, { kind }) => ({ title: 'Photosynthèse', items: [
+  reply('llm:diagram', (_id, { kind }) => ({ title: 'Photosynthèse', items: [
     { title: 'Lumière', text: 'Énergie captée par la chlorophylle', children: ['Soleil', 'Chlorophylle'] },
     { title: 'Eau', text: 'Absorbée par les racines', children: ['Racines', 'Sève brute'] },
     { title: 'CO₂', text: 'Entre par les stomates', children: ['Stomates', 'Air'] },
     { title: 'Glucose', text: 'Énergie chimique stockée', children: ['Sucres', 'Amidon'] },
     { title: 'Oxygène', text: 'Rejeté dans l’air', children: ['Respiration'] },
   ] }));
-  reply('ai:illustration', () => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520"><rect width="800" height="520" fill="#eef6ff"/><circle cx="640" cy="110" r="60" fill="#ffd166"/><rect x="0" y="400" width="800" height="120" fill="#7ac74f"/><rect x="380" y="250" width="40" height="160" fill="#8d6e63"/><circle cx="400" cy="220" r="110" fill="#43a047"/><text x="40" y="60" font-size="28" font-family="Segoe UI" fill="#1f3b57">La photosynthèse</text></svg>');
+  reply('llm:keywords', () => ['plante', 'soleil', 'eau']);
 }
 
 app.on('browser-window-created', (_e, win) => {

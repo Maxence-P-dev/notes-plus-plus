@@ -10,14 +10,16 @@ export const setSettingsOpener = (fn) => (openSettingsAt = fn);
 /* ------------------------------------------------------------ busy pill */
 
 let busyEl = null;
+let busyId = null;
 
 function busy(label, id) {
   busyEl?.remove();
+  busyId = id;
   busyEl = h(
     'div',
     { class: 'ai-busy' },
     h('span', { class: 'ai-spin' }),
-    h('span', {}, label),
+    h('span', { class: 'ai-busy-label' }, label),
     h('button', { class: 'btn ghost sm', onclick: () => api.ai.cancel(id) }, 'Annuler')
   );
   document.body.append(busyEl);
@@ -27,10 +29,19 @@ function busy(label, id) {
 function idle() {
   const el = busyEl;
   busyEl = null;
+  busyId = null;
   if (!el) return;
   el.classList.remove('show');
   setTimeout(() => el.remove(), 200);
 }
+
+api.onAiProgress(({ id, n, step, steps, verify, verifies }) => {
+  if (id !== busyId || !busyEl) return;
+  const label = busyEl.querySelector('.ai-busy-label');
+  if (verifies) label.textContent = `L’IA vérifie ses propositions… ${verify} sur ${verifies}`;
+  else if (steps) label.textContent = steps > 1 ? `L’IA relit ton cours… partie ${step} sur ${steps}` : 'L’IA relit ton cours…';
+  else if (n) label.textContent = `L’IA écrit… ${n} caractères`;
+});
 
 let seq = 0;
 /** Runs one AI call with the busy indicator; returns the value or null. */
@@ -40,7 +51,7 @@ async function run(label, call, ...args) {
   try {
     const r = await call(id, ...args);
     if (r.ok) return r.value;
-    if (r.error.code === 'no-key' || r.error.code === 'auth') {
+    if (r.error.code === 'no-model') {
       toast(r.error.message, 'error');
       openSettingsAt('ai');
     } else if (r.error.code !== 'aborted') toast(r.error.message, 'error');
@@ -48,6 +59,15 @@ async function run(label, call, ...args) {
   } finally {
     idle();
   }
+}
+
+/** True when a model is installed; otherwise points to the settings. */
+async function ready() {
+  const r = await api.ai.status();
+  if (r.ok && r.value.active) return true;
+  toast('Installe d’abord l’IA de Notes++ (une seule fois)', 'error');
+  openSettingsAt('ai');
+  return false;
 }
 
 /* ------------------------------------------------------------ text map */
@@ -104,14 +124,13 @@ function closePanel() {
 }
 
 export async function correct(editor) {
+  if (!(await ready())) return;
   const { from, to, empty } = editor.state.selection;
-  const scope = empty ? null : { from, to };
-  const blocks = textBlocks(editor.state.doc, scope?.from, scope?.to);
+  const blocks = empty ? textBlocks(editor.state.doc) : textBlocks(editor.state.doc, from, to);
   const text = blocks.map((b) => b.text).join('\n');
   if (!text.trim()) return toast('Il n’y a pas encore de texte à corriger', 'error');
-  if (text.length > 120000) return toast('Le cours est très long : sélectionne une partie à corriger', 'error');
 
-  const list = await run(scope ? 'Claude relit la sélection…' : 'Claude relit ton cours…', api.ai.correct, text);
+  const list = await run(empty ? 'L’IA relit ton cours…' : 'L’IA relit la sélection…', api.ai.correct, text);
   if (!list) return;
   if (!list.length) return toast('Aucune faute trouvée, bravo !');
   showCorrections(editor, list);
@@ -135,8 +154,7 @@ function showCorrections(editor, list) {
   const show = (c) => {
     const r = find(c);
     if (!r) return;
-    const tr = editor.state.tr.setSelection(TextSelection.create(editor.state.doc, r.from, r.to)).scrollIntoView();
-    editor.view.dispatch(tr);
+    editor.view.dispatch(editor.state.tr.setSelection(TextSelection.create(editor.state.doc, r.from, r.to)).scrollIntoView());
     editor.view.focus();
   };
 
@@ -147,21 +165,22 @@ function showCorrections(editor, list) {
     countEl.textContent = todo.length ? `${todo.length} à revoir` : 'Terminé';
     listEl.innerHTML = '';
     items.forEach((c) => {
-      const card = h(
-        'div',
-        { class: `cx-item ${c.state}`, onclick: () => c.state === 'todo' && show(c) },
-        h('div', { class: 'cx-diff' }, h('del', {}, c.original), h('span', { class: 'cx-arrow', html: icon('chevron', 12) }), h('ins', {}, c.replacement)),
-        h('div', { class: 'cx-why' }, c.reason),
-        c.state === 'todo'
-          ? h(
-              'div',
-              { class: 'cx-actions' },
-              h('button', { class: 'btn primary sm', onclick: (e) => (e.stopPropagation(), apply(c), render()) }, 'Corriger'),
-              h('button', { class: 'btn ghost sm', onclick: (e) => (e.stopPropagation(), (c.state = 'skip'), render()) }, 'Ignorer')
-            )
-          : h('div', { class: 'cx-state' }, c.state === 'done' ? '✓ Corrigé' : c.state === 'skip' ? 'Ignoré' : 'Texte modifié entre-temps')
+      listEl.append(
+        h(
+          'div',
+          { class: `cx-item ${c.state}`, onclick: () => c.state === 'todo' && show(c) },
+          h('div', { class: 'cx-diff' }, h('del', {}, c.original), h('span', { class: 'cx-arrow', html: icon('chevron', 12) }), h('ins', {}, c.replacement)),
+          h('div', { class: 'cx-why' }, c.reason),
+          c.state === 'todo'
+            ? h(
+                'div',
+                { class: 'cx-actions' },
+                h('button', { class: 'btn primary sm', onclick: (e) => (e.stopPropagation(), apply(c), render()) }, 'Corriger'),
+                h('button', { class: 'btn ghost sm', onclick: (e) => (e.stopPropagation(), (c.state = 'skip'), render()) }, 'Ignorer')
+              )
+            : h('div', { class: 'cx-state' }, c.state === 'done' ? '✓ Corrigé' : c.state === 'skip' ? 'Ignoré' : 'Texte modifié entre-temps')
+        )
       );
-      listEl.append(card);
     });
   };
 
@@ -171,24 +190,22 @@ function showCorrections(editor, list) {
     h(
       'div',
       { class: 'cx-head' },
-      h('div', {}, h('b', {}, `${items.length} correction${items.length > 1 ? 's' : ''}`), countEl),
+      h('div', {}, h('b', {}, `${items.length} correction${items.length > 1 ? 's' : ''} proposée${items.length > 1 ? 's' : ''}`), countEl),
       h('button', { class: 'icon-btn', title: 'Fermer', onclick: closePanel, html: icon('x', 17) })
     ),
     h(
       'div',
       { class: 'cx-bar' },
-      h(
-        'button',
-        {
-          class: 'btn primary sm',
-          html: icon('check', 15) + '<span>Tout corriger</span>',
-          onclick: () => {
-            items.filter((c) => c.state === 'todo').forEach(apply);
-            render();
-            toast('Corrections appliquées');
-          },
-        }
-      )
+      h('button', {
+        class: 'btn primary sm',
+        html: icon('check', 15) + '<span>Tout corriger</span>',
+        onclick: () => {
+          items.filter((c) => c.state === 'todo').forEach(apply);
+          render();
+          toast('Corrections appliquées');
+        },
+      }),
+      h('p', { class: 'cx-note' }, 'Vérifie chaque proposition : l’IA peut se tromper.')
     ),
     listEl
   );
@@ -198,7 +215,7 @@ function showCorrections(editor, list) {
 
 /* ------------------------------------------------------------- dialogs */
 
-function dialog(build) {
+function dialog(build, cls = '') {
   const overlay = h('div', { class: 'overlay' });
   const close = () => {
     overlay.classList.remove('open');
@@ -208,7 +225,7 @@ function dialog(build) {
   const onKey = (e) => e.key === 'Escape' && (e.stopPropagation(), close());
   document.addEventListener('keydown', onKey, true);
   overlay.addEventListener('mousedown', (e) => e.target === overlay && close());
-  const box = h('div', { class: 'modal ai-dialog' });
+  const box = h('div', { class: `modal ai-dialog ${cls}` });
   build(box, close);
   overlay.append(box);
   document.body.append(overlay);
@@ -238,12 +255,12 @@ export function diagramDialog(editor, opts = {}) {
         )
       )
     );
-    const req = h('textarea', { class: 'input area', rows: '3', placeholder: 'Ex. : les causes de la Première Guerre mondiale. Laisse vide pour que Claude se base sur ton cours.' });
+    const req = h('textarea', { class: 'input area', rows: '3', placeholder: 'Ex. : les causes de la Première Guerre mondiale. Laisse vide pour que l’IA se base sur ton cours.' });
     req.value = opts.request || '';
     const insert = (data) => {
       const attrs = { kind, palette: 'iris', title: data.title || '', items: data.items };
       if (opts.replace != null) {
-        editor.view.dispatch(editor.state.tr.setNodeMarkup(opts.replace, undefined, { ...editor.state.doc.nodeAt(opts.replace).attrs, ...attrs, kind }));
+        editor.view.dispatch(editor.state.tr.setNodeMarkup(opts.replace, undefined, { ...editor.state.doc.nodeAt(opts.replace).attrs, ...attrs }));
       } else editor.chain().focus().insertDiagram(attrs).run();
     };
     box.append(
@@ -256,46 +273,104 @@ export function diagramDialog(editor, opts = {}) {
         'div',
         { class: 'modal-actions' },
         opts.replace != null ? null : h('button', { class: 'btn ghost', onclick: () => (close(), insert(emptyDiagram(kind))) }, 'Vide, à remplir'),
-        h(
-          'button',
-          {
-            class: 'btn primary',
-            html: icon('sparkle', 16) + '<span>Générer avec l’IA</span>',
-            onclick: async () => {
-              close();
-              const data = await run('Claude dessine ton schéma…', api.ai.diagram, { kind, request: req.value.trim(), context: courseText(editor) });
-              if (data?.items?.length) insert(data);
-            },
-          }
-        )
+        h('button', {
+          class: 'btn primary',
+          html: icon('sparkle', 16) + '<span>Générer avec l’IA</span>',
+          onclick: async () => {
+            if (!(await ready())) return close();
+            close();
+            const data = await run('L’IA prépare ton schéma…', api.ai.diagram, { kind, request: req.value.trim(), context: courseText(editor) });
+            if (data?.items?.length) insert(data);
+          },
+        })
       )
     );
     setTimeout(() => req.focus(), 60);
   });
 }
 
-const STYLES = [
-  { id: 'flat', label: 'Illustration' },
-  { id: 'schema', label: 'Schéma légendé' },
-  { id: 'line', label: 'Dessin au trait' },
-  { id: 'icon', label: 'Icône' },
+/* ---------------------------------------------------------- pictograms */
+
+let pictos = null;
+const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+async function loadPictos() {
+  if (!pictos) {
+    const list = await (await fetch('pictos.json')).json();
+    pictos = list.map((p) => ({ ...p, k: norm(`${p.l} ${p.t}`), n: norm(p.l) }));
+  }
+  return pictos;
+}
+
+function searchPictos(query, limit = 60) {
+  const words = norm(query).split(/[\s,;']+/).filter((w) => w.length > 1);
+  if (!words.length) return [];
+  const scored = [];
+  for (const p of pictos) {
+    let score = 0;
+    for (const w of words) {
+      if (p.n === w) score += 10;
+      else if (p.n.startsWith(w)) score += 6;
+      else if (` ${p.k}`.includes(` ${w}`)) score += 3;
+      else if (p.k.includes(w)) score += 1;
+    }
+    if (score) scored.push([score, p]);
+  }
+  return scored
+    .sort((a, b) => b[0] - a[0] || a[1].l.length - b[1].l.length)
+    .slice(0, limit)
+    .map(([, p]) => p);
+}
+
+const SIZES = [
+  { id: 96, label: 'Petit' },
+  { id: 160, label: 'Moyen' },
+  { id: 260, label: 'Grand' },
 ];
 
-export function illustrationDialog(editor) {
-  let style = 'schema';
+export function pictoDialog(editor) {
+  let size = 160;
   dialog((box, close) => {
-    const req = h('textarea', { class: 'input area', rows: '3', placeholder: 'Ex. : le cycle de l’eau avec évaporation, condensation et précipitations' });
-    const chips = h(
+    const input = h('input', { class: 'input', placeholder: 'Rechercher : plante, soleil, cœur, Terre, livre…', spellcheck: 'false' });
+    const grid = h('div', { class: 'picto-grid' });
+    const info = h('div', { class: 'picto-info' });
+    const insert = (p) => {
+      close();
+      const svg = p.s.replace('<svg ', `<svg width="${size}" height="${size}" `);
+      const src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+      editor
+        .chain()
+        .focus()
+        .command(({ state, commands }) => insertBlock(state, commands, { type: 'image', attrs: { src, alt: p.l, width: size, height: size, align: 'center' } }))
+        .run();
+    };
+    const show = (list, title) => {
+      grid.innerHTML = '';
+      info.textContent = title;
+      list.forEach((p) => grid.append(h('button', { class: 'picto', title: p.l, html: p.s, onclick: () => insert(p) })));
+    };
+    const doSearch = () => {
+      const q = input.value.trim();
+      if (!q) return show(pictos.filter((p) => [4, 5, 6, 7].includes(p.g)).slice(0, 60), 'Quelques idées');
+      const r = searchPictos(q);
+      show(r, r.length ? `${r.length} résultat${r.length > 1 ? 's' : ''}` : 'Aucun résultat. Essaie un autre mot.');
+    };
+    let t;
+    input.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(doSearch, 120);
+    });
+    const sizes = h(
       'div',
       { class: 'seg' },
-      STYLES.map((s) =>
+      SIZES.map((s) =>
         h(
           'button',
           {
-            class: `seg-btn${s.id === style ? ' on' : ''}`,
+            class: `seg-btn${s.id === size ? ' on' : ''}`,
             onclick: (e) => {
-              style = s.id;
-              chips.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('on'));
+              size = s.id;
+              sizes.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('on'));
               e.currentTarget.classList.add('on');
             },
           },
@@ -303,25 +378,26 @@ export function illustrationDialog(editor) {
         )
       )
     );
-    const go = async () => {
-      const request = req.value.trim();
-      if (!request) return req.focus();
-      close();
-      const svg = await run('Claude dessine ton illustration… (environ une minute)', api.ai.illustration, { request, style });
-      if (!svg) return;
-      const src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
-      editor.chain().focus().command(({ state, commands }) => insertBlock(state, commands, { type: 'image', attrs: { src, alt: request } })).run();
-      toast('Illustration ajoutée : clique dessus pour la placer');
-    };
-    req.addEventListener('keydown', (e) => e.key === 'Enter' && (e.ctrlKey || e.metaKey) && go());
+    const suggest = h('button', {
+      class: 'btn soft',
+      html: icon('sparkle', 15) + '<span>Idées de l’IA</span>',
+      onclick: async () => {
+        if (!(await ready())) return close();
+        const words = await run('L’IA cherche des idées…', api.ai.keywords, { request: input.value.trim(), context: courseText(editor) });
+        if (!words?.length) return;
+        const seen = new Set();
+        const list = words.flatMap((w) => searchPictos(w, 8)).filter((p) => !seen.has(p.l) && seen.add(p.l));
+        show(list, `Idées de l’IA : ${words.join(', ')}`);
+      },
+    });
     box.append(
-      h('h3', {}, 'Créer une illustration'),
-      h('p', { class: 'modal-text' }, 'Décris ce que tu veux voir. Claude dessine une illustration vectorielle nette, que tu pourras placer et redimensionner comme une image.'),
-      req,
-      h('label', { class: 'set-help' }, 'Style'),
-      chips,
-      h('div', { class: 'modal-actions' }, h('button', { class: 'btn ghost', onclick: close }, 'Annuler'), h('button', { class: 'btn primary', html: icon('sparkle', 16) + '<span>Dessiner</span>', onclick: go }))
+      h('h3', {}, 'Ajouter un pictogramme'),
+      h('div', { class: 'picto-bar' }, input, suggest),
+      h('div', { class: 'picto-row' }, info, sizes),
+      grid,
+      h('p', { class: 'picto-credit' }, 'Dessins Twemoji (CC-BY 4.0). Clique pour l’insérer, puis place-le comme une image.')
     );
-    setTimeout(() => req.focus(), 60);
-  });
+    loadPictos().then(doSearch);
+    setTimeout(() => input.focus(), 60);
+  }, 'picto-dialog');
 }

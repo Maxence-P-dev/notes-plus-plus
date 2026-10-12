@@ -2593,3 +2593,157 @@ kbd,
 .platform-darwin .brand {
   min-width: calc(var(--sb-w, 280px) - 132px);
 }
+
+/* ====================================================== local AI models */
+
+.model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.model-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--main);
+}
+
+.model-card.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.model-ic {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex: none;
+}
+
+.model-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.model-txt b {
+  font-size: 14px;
+}
+
+.model-txt span {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.model-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.model-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 150px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.set-help.muted {
+  color: var(--text-3);
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+.cx-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ============================================================ pictograms */
+
+.modal.picto-dialog {
+  width: min(720px, calc(100vw - 32px));
+}
+
+.picto-bar {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+
+.picto-bar .input {
+  margin: 0;
+  flex: 1;
+}
+
+.picto-bar .btn {
+  height: 40px;
+}
+
+.picto-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.picto-info {
+  font-size: 12.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 6px;
+  height: 330px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--chrome);
+  border: 1px solid var(--border);
+  align-content: start;
+}
+
+.picto {
+  aspect-ratio: 1;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background 0.12s, transform 0.12s;
+}
+
+.picto:hover {
+  background: var(--main);
+  transform: scale(1.08);
+  box-shadow: var(--shadow-sm);
+}
+
+.picto svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.picto-credit {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  color: var(--text-3);
+}

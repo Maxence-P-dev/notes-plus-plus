@@ -35,7 +35,8 @@
 - **Enregistrement automatique** pendant que tu écris.
 - **Recherche** dans les titres et dans le contenu de tous les cours (`Ctrl+P`).
 - **Export PDF** propre, au format A4 et paginé (`Ctrl+Maj+E`).
-- **Intelligence artificielle (Claude)** : correction des fautes avec explication de chaque règle, schémas générés à partir du cours (carte mentale, frise, étapes, cycle, comparaison, organigramme, fiches) et illustrations dessinées sur demande. Nécessite ta propre clé API Claude.
+- **IA intégrée, gratuite et hors ligne** : elle tourne directement sur ton ordinateur (aucun compte, aucune clé, tes cours ne quittent pas ton PC). Correction des fautes avec explication, schémas générés à partir du cours (carte mentale, frise, étapes, cycle, comparaison, organigramme, fiches) et suggestions de pictogrammes. Le modèle (1 à 2 Go) se télécharge une seule fois depuis les Paramètres.
+- **Pictogrammes** : près de 1 900 dessins en couleur, avec une recherche en français.
 - **Formes libres** : rectangles, cercles, bulles, flèches, étoiles… à placer, redimensionner, colorer et remplir de texte.
 - **Paramètres** : couleur principale de l’appli (10 couleurs ou la tienne), police des cours (moderne, classique, manuscrite), taille du texte.
 - **Mises à jour automatiques** : Notes++ te prévient quand une nouvelle version sort, et l’installe en un clic.
@@ -100,4 +101,7 @@ L'application est construite avec Electron et l'éditeur TipTap. Le code est org
 
 ## Licence
 
-MIT
+MIT pour le code de Notes++.
+
+- L'IA utilise [Llama 3.2](https://www.llama.com/llama3_2/license/) (Built with Llama) ou [Qwen 2.5](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) (Apache 2.0), exécutés avec [node-llama-cpp](https://github.com/withcatai/node-llama-cpp).
+- Pictogrammes : [Twemoji](https://github.com/jdecked/twemoji) (CC-BY 4.0), noms français : [Emojibase](https://emojibase.dev) (MIT).

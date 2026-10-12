@@ -5,3 +5,4 @@ shots/
 *.log
 video/
 dev-app-update.yml
+app/pictos.json

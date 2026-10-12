@@ -1,7 +1,7 @@
 'use strict';
 
 const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme, Menu } = require('electron');
-const ai = require('./ai');
+const llm = require('./llm');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -582,8 +582,9 @@ if (!app.requestSingleInstanceLock()) {
     Menu.setApplicationMenu(
       process.platform === 'darwin' ? Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]) : null
     );
-    ai.register();
+    llm.register();
     createWindow();
+    llm.setWindow(win);
     setupUpdater();
   });
   app.on('window-all-closed', () => app.quit());

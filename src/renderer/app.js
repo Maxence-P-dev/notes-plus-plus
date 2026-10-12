@@ -4,7 +4,7 @@ import { $, h, openFloating, closeFloating, isFloatingOpen, menuList, contextMen
 import { createEditor, CALLOUTS, IMAGE_ALIGNS } from './editor.js';
 import { setupUpdates, openAbout } from './update.js';
 import { openSettings, applyLook } from './settings.js';
-import { correct, diagramDialog, illustrationDialog, setSettingsOpener } from './ai-ui.js';
+import { correct, diagramDialog, pictoDialog, setSettingsOpener } from './ai-ui.js';
 import { DIAGRAM_KINDS, PALETTES, insertBlock } from './blocks.js';
 
 const api = window.notesApp;
@@ -773,10 +773,10 @@ function aiButton() {
       menuList([
         { label: 'Corriger les fautes', icon: 'spell', kbd: 'Ctrl Maj O', action: () => correct(ed) },
         { label: 'Insérer un schéma…', icon: 'diagram', action: () => diagramDialog(ed) },
-        { label: 'Créer une illustration…', icon: 'image', action: () => illustrationDialog(ed) },
+        { label: 'Ajouter un pictogramme…', icon: 'image', action: () => pictoDialog(ed) },
         { label: 'Zone de formes', icon: 'shapes', action: () => chain().insertShapeBoard().run() },
         'sep',
-        { label: 'Réglages de l’IA', icon: 'gear', action: () => openAppSettings('ai') },
+        { label: 'Installer ou changer l’IA', icon: 'gear', action: () => openAppSettings('ai') },
       ]),
   });
   el.classList.add('tb-ai');
@@ -1278,7 +1278,7 @@ async function init() {
     actions: {
       pickImage: insertImage,
       diagram: () => diagramDialog(ed),
-      illustration: () => illustrationDialog(ed),
+      illustration: () => pictoDialog(ed),
       correct: () => correct(ed),
     },
     onUpdate: () => {

@@ -1,10 +1,10 @@
 {
   "name": "notes-plus-plus",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Notes++ — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
   "main": "app/main.js",
   "scripts": {
-    "build": "esbuild src/renderer/app.js --bundle --minify --format=iife --target=chrome130 --outfile=app/dist/renderer.js",
+    "build": "node scripts/make-pictos.mjs && esbuild src/renderer/app.js --bundle --minify --format=iife --target=chrome130 --outfile=app/dist/renderer.js",
     "watch": "npm run build -- --watch --sourcemap",
     "start": "npm run build && electron .",
     "icons": "node scripts/make-icons.mjs",
@@ -25,15 +25,18 @@
     "@tiptap/extensions": "^3.31.4",
     "@tiptap/pm": "^3.31.4",
     "@tiptap/starter-kit": "^3.31.4",
+    "@twemoji/svg": "^15.0.0",
     "electron": "^44.7.0",
     "electron-builder": "^26.15.3",
+    "emojibase-data": "^17.0.0",
     "esbuild": "^0.28.2",
     "png-to-ico": "^3.0.2",
     "sharp": "^0.35.5"
   },
   "allowScripts": {
     "esbuild@0.28.2": true,
-    "electron-winstaller@5.4.0": true
+    "electron-winstaller@5.4.0": true,
+    "node-llama-cpp@3.22.1": true
   },
   "productName": "Notes++",
   "build": {
@@ -46,7 +49,15 @@
     },
     "files": [
       "app/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/node-llama-cpp/bins/**/*",
+      "node_modules/node-llama-cpp/bins/${os}-${arch}*/**/*",
+      "!node_modules/node-llama-cpp/llama/localBuilds/**/*",
+      "node_modules/node-llama-cpp/llama/localBuilds/${os}-${arch}*/**/*",
+      "!node_modules/@node-llama-cpp/*/bins/**/*",
+      "node_modules/@node-llama-cpp/${os}-${arch}*/bins/**/*",
+      "!node_modules/@node-llama-cpp/*cuda*/**/*",
+      "!node_modules/node-llama-cpp/llama/llama.cpp/**/*"
     ],
     "win": {
       "icon": "build/icon.ico",
@@ -99,27 +110,28 @@
       "identity": "-",
       "target": [
         {
-          "target": "dmg",
-          "arch": [
-            "universal"
-          ]
+          "target": "dmg"
         },
         {
-          "target": "zip",
-          "arch": [
-            "universal"
-          ]
+          "target": "zip"
         }
       ],
-      "artifactName": "NotesPlusPlus-Mac.${ext}"
+      "artifactName": "NotesPlusPlus-Mac-${arch}.${ext}"
     },
     "dmg": {
       "title": "Notes++",
-      "artifactName": "NotesPlusPlus-Mac.${ext}"
-    }
+      "artifactName": "NotesPlusPlus-Mac-${arch}.${ext}"
+    },
+    "asarUnpack": [
+      "node_modules/node-llama-cpp/bins",
+      "node_modules/node-llama-cpp/llama/localBuilds",
+      "node_modules/@node-llama-cpp/*"
+    ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.133.0",
-    "electron-updater": "^6.8.9"
+    "dictionary-fr": "^3.0.0",
+    "electron-updater": "^6.8.9",
+    "node-llama-cpp": "^3.22.1",
+    "nspell": "^2.1.5"
   }
 }

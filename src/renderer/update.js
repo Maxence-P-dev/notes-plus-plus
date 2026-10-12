@@ -101,7 +101,7 @@ export function openAbout() {
       'div',
       { class: 'about-foot' },
       h('button', { class: 'link', onclick: () => api.update.notes() }, 'Page du projet sur GitHub'),
-      h('span', {}, 'Gratuit · Open source (MIT)')
+      h('span', { title: 'IA : Llama 3.2 (Built with Llama) ou Qwen 2.5 · Pictogrammes : Twemoji (CC-BY 4.0)' }, 'Gratuit · Open source (MIT) · Built with Llama')
     )
   );
   overlay.append(panel);

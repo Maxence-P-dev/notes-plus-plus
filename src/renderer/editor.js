@@ -122,8 +122,8 @@ function slashItems(actions) {
     { label: 'Séparateur', hint: 'Ligne horizontale', icon: 'minus', k: 'separateur ligne hr divider', run: (c) => c.setHorizontalRule() },
     { label: 'Schéma', hint: 'Carte mentale, frise, étapes… avec l’IA', icon: 'diagram', cls: 'sw-ai', k: 'schema diagramme carte mentale frise chronologique etapes cycle comparaison organigramme fiches ia', run: later(actions.diagram) },
     { label: 'Formes', hint: 'Rectangles, bulles, flèches à remplir', icon: 'shapes', k: 'formes shapes rectangle cercle bulle fleche dessin', run: (c) => c.insertShapeBoard() },
-    { label: 'Illustration IA', hint: 'Claude dessine ce que tu décris', icon: 'sparkle', cls: 'sw-ai', k: 'illustration image dessin ia generer', run: later(actions.illustration) },
-    { label: 'Corriger les fautes', hint: 'Claude relit tout le cours', icon: 'spell', cls: 'sw-ai', k: 'corriger fautes orthographe grammaire ia', run: later(actions.correct) },
+    { label: 'Pictogramme', hint: 'Près de 1 900 dessins en couleur', icon: 'sparkle', cls: 'sw-ai', k: 'pictogramme illustration image dessin emoji icone', run: later(actions.illustration) },
+    { label: 'Corriger les fautes', hint: 'L’IA relit tout le cours', icon: 'spell', cls: 'sw-ai', k: 'corriger fautes orthographe grammaire ia', run: later(actions.correct) },
   ];
 }
 

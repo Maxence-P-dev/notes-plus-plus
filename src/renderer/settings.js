@@ -36,6 +36,8 @@ export function applyLook({ accent, font }) {
 }
 
 let overlay = null;
+let aiListener = null;
+api.onAiStatus((st) => aiListener?.(st));
 
 /**
  * Settings window. `ctx` gives access to the parts of the app it changes:
@@ -51,6 +53,7 @@ export async function openSettings(ctx) {
     setTimeout(() => el.remove(), 150);
     document.removeEventListener('keydown', onKey, true);
     overlay = null;
+    aiListener = null;
   };
   const onKey = (e) => e.key === 'Escape' && (e.stopPropagation(), close());
   document.addEventListener('keydown', onKey, true);
@@ -125,62 +128,72 @@ export async function openSettings(ctx) {
   });
   paintZoom();
 
-  /* --- IA */
+  /* --- IA locale */
   const aiBox = h('div', { class: 'ai-key' });
-  const renderAi = async () => {
-    const st = await api.ai.status();
-    const configured = st.ok && st.value.configured;
+  const renderAi = (st) => {
+    if (!st) return;
     aiBox.innerHTML = '';
-    if (configured) {
-      aiBox.append(
-        h('div', { class: 'ai-ok' }, h('span', { html: icon('checkCircle', 18) }), h('div', {}, h('b', {}, 'IA activée'), h('span', {}, `Modèle : Claude Opus 5.5 · ta clé est chiffrée sur cet ordinateur`))),
-        h(
-          'button',
-          {
-            class: 'btn ghost sm',
-            onclick: async () => {
-              await api.ai.clearKey();
-              toast('Clé supprimée');
-              renderAi();
-            },
-          },
-          'Retirer la clé'
-        )
-      );
-      return;
-    }
-    const input = h('input', { class: 'input', type: 'password', placeholder: 'sk-ant-…', spellcheck: 'false', autocomplete: 'off' });
-    const msg = h('div', { class: 'ai-msg' });
-    const saveBtn = h('button', { class: 'btn primary sm', html: icon('key', 15) + '<span>Activer</span>' });
-    const submit = async () => {
-      saveBtn.disabled = true;
-      msg.className = 'ai-msg';
-      msg.textContent = 'Vérification de la clé…';
-      const r = await api.ai.setKey(input.value);
-      saveBtn.disabled = false;
-      if (r.ok) {
-        toast('IA activée');
-        renderAi();
-      } else {
-        msg.className = 'ai-msg err';
-        msg.textContent = r.error.message;
-      }
-    };
-    saveBtn.addEventListener('click', submit);
-    input.addEventListener('keydown', (e) => e.key === 'Enter' && submit());
     aiBox.append(
       h(
         'p',
         { class: 'set-help' },
-        'Notes++ utilise Claude, l’IA d’Anthropic. Crée une clé API sur ',
-        h('a', { href: 'https://console.anthropic.com/settings/keys', target: '_blank' }, 'console.anthropic.com'),
-        ', ajoute un peu de crédit, puis colle la clé ici. Une correction coûte en général quelques centimes.'
-      ),
-      h('div', { class: 'ai-input' }, input, saveBtn),
-      msg
+        'L’IA de Notes++ fonctionne directement sur ton ordinateur : gratuite, sans compte, et sans Internet une fois installée. Tes cours ne quittent jamais ton PC.'
+      )
     );
-    setTimeout(() => ctx.section === 'ai' && input.focus(), 60);
+    const list = h('div', { class: 'model-list' });
+    st.models.forEach((m) => {
+      const dl = st.download?.id === m.id ? st.download : null;
+      const active = st.active === m.id;
+      const actions = h('div', { class: 'model-actions' });
+      if (dl) {
+        actions.append(
+          h('div', { class: 'model-progress' }, h('div', { class: 'up-track' }, h('div', { class: 'up-bar', style: `width:${dl.percent}%` })), h('span', {}, `${dl.percent} %`)),
+          h('button', { class: 'btn ghost sm', onclick: () => api.ai.cancelInstall() }, 'Pause')
+        );
+      } else if (!m.installed) {
+        actions.append(
+          h('button', {
+            class: 'btn primary sm',
+            disabled: !!st.download,
+            html: icon('download', 15) + `<span>Installer (${m.size})</span>`,
+            onclick: async () => {
+              const r = await api.ai.install(m.id);
+              if (r.ok) toast('IA installée : elle est prête à l’emploi');
+              else if (r.error.code !== 'aborted') toast(r.error.message, 'error');
+            },
+          })
+        );
+      } else {
+        if (!active) actions.append(h('button', { class: 'btn soft sm', onclick: () => api.ai.use(m.id) }, 'Utiliser'));
+        actions.append(
+          h('button', {
+            class: 'btn ghost sm',
+            title: 'Supprimer le modèle pour libérer de la place',
+            html: icon('trash', 15),
+            onclick: async () => {
+              await api.ai.remove(m.id);
+              toast('Modèle supprimé');
+            },
+          })
+        );
+      }
+      list.append(
+        h(
+          'div',
+          { class: `model-card${active ? ' on' : ''}` },
+          h('span', { class: 'model-ic', html: icon(active ? 'checkCircle' : 'sparkle', 18) }),
+          h('div', { class: 'model-txt' }, h('b', {}, `${m.label} · ${m.name}`), h('span', {}, active ? 'Utilisé par Notes++' : m.installed ? 'Installé' : `${m.hint} · ${m.size}`)),
+          actions
+        )
+      );
+    });
+    aiBox.append(list);
+    if (!st.models.some((m) => m.installed) && !st.download) {
+      aiBox.append(h('p', { class: 'set-help muted' }, 'Le téléchargement se fait une seule fois. S’il est interrompu, il reprend là où il s’était arrêté.'));
+    }
   };
+  api.ai.status().then((r) => r.ok && renderAi(r.value));
+  aiListener = renderAi;
 
   const box = h(
     'div',
@@ -238,7 +251,7 @@ export async function openSettings(ctx) {
         ),
         row('Taille du texte', 'Aussi avec Ctrl + / Ctrl −', h('div', { class: 'zoom-row' }, zoom, zoomOut))
       ),
-      section('ai', 'Intelligence artificielle', 'sparkle', aiBox),
+      section('ai', 'IA intégrée', 'sparkle', aiBox),
       section(
         'files',
         'Dossier et mises à jour',
@@ -251,7 +264,6 @@ export async function openSettings(ctx) {
   overlay.append(box);
   document.body.append(overlay);
   paintSwatches();
-  renderAi();
   requestAnimationFrame(() => {
     overlay.classList.add('open');
     if (ctx.section) box.querySelector(`#set-${ctx.section}`)?.scrollIntoView({ block: 'start' });
