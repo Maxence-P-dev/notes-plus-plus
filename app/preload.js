@@ -22,6 +22,14 @@ contextBridge.exposeInMainWorld('notesApp', {
   pickImage: invoke('image:pick'),
   exportPdf: invoke('export:pdf'),
   toggleFullscreen: invoke('win:fullscreen'),
+  update: {
+    get: invoke('update:get'),
+    check: invoke('update:check'),
+    download: invoke('update:download'),
+    install: invoke('update:install'),
+    notes: invoke('update:notes'),
+  },
+  onUpdate: (cb) => ipcRenderer.on('update:status', (_e, s) => cb(s)),
   onSystemTheme: (cb) => ipcRenderer.on('theme:system', (_e, t) => cb(t)),
   onFullscreen: (cb) => ipcRenderer.on('fullscreen', (_e, v) => cb(v)),
 });

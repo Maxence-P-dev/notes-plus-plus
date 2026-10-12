@@ -2,6 +2,7 @@ import { EditorState } from '@tiptap/pm/state';
 import { icon, LOGO } from './icons.js';
 import { $, h, openFloating, closeFloating, isFloatingOpen, menuList, contextMenu, promptModal, confirmModal, toast } from './ui.js';
 import { createEditor, CALLOUTS, IMAGE_ALIGNS } from './editor.js';
+import { setupUpdates, openAbout } from './update.js';
 
 const api = window.notesApp;
 
@@ -996,6 +997,8 @@ function setupSidebar() {
       menuList([
         { label: 'Ouvrir dans l’explorateur', icon: 'external', action: () => api.reveal('') },
         { label: 'Changer de dossier…', icon: 'folder', action: chooseRoot },
+        'sep',
+        { label: 'À propos et mises à jour', icon: 'info', action: openAbout },
       ]),
       { anchor: btn }
     );
@@ -1132,6 +1135,8 @@ async function init() {
   }
 
   $('#brand').innerHTML = LOGO + '<span>Notes++</span>';
+  $('#brand').addEventListener('click', openAbout);
+  setupUpdates();
   $('#btn-sidebar').innerHTML = icon('sidebar');
   $('#btn-focus').innerHTML = icon('focus');
   $('#btn-pdf').innerHTML = icon('download');

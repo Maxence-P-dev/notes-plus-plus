@@ -35,6 +35,7 @@
 - **Enregistrement automatique** pendant que tu écris.
 - **Recherche** dans les titres et dans le contenu de tous les cours (`Ctrl+P`).
 - **Export PDF** propre, au format A4 et paginé (`Ctrl+Maj+E`).
+- **Mises à jour automatiques** : Notes++ te prévient quand une nouvelle version sort, et l’installe en un clic.
 - **Mode concentration** en plein écran (`F11`), zoom (`Ctrl +` / `Ctrl −`), correcteur orthographique en français.
 
 Les cours sont de simples fichiers `.cours` (en HTML) dans `Documents\Mes Cours`. Tu peux changer ce dossier depuis le bas de la barre latérale, par exemple pour le mettre dans OneDrive.

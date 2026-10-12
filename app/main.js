@@ -389,6 +389,98 @@ handle('win:fullscreen', () => {
   return win.isFullScreen();
 });
 
+/* ---------------------------------------------------------------- updates */
+
+const RELEASES_URL = 'https://github.com/Maxence-P-dev/notes-plus-plus/releases';
+// In development, updates are only checked when this file points to a test feed.
+const DEV_UPDATE_CONFIG = path.join(__dirname, '..', 'dev-app-update.yml');
+const CHECK_EVERY = 4 * 60 * 60 * 1000;
+
+let updater = null;
+let update = { state: 'idle', current: app.getVersion(), canInstall: false };
+
+function setUpdate(patch) {
+  update = { ...update, ...patch };
+  win?.webContents.send('update:status', update);
+}
+
+// The NSIS installer leaves an uninstaller next to the exe; the portable zip does not.
+function isInstalled() {
+  try {
+    return fs.readdirSync(path.dirname(process.execPath)).some((f) => /^Uninstall .*\.exe$/i.test(f));
+  } catch {
+    return false;
+  }
+}
+
+function updateError(err) {
+  const msg = String(err?.message || err);
+  if (/ENOTFOUND|ECONN|ETIMEDOUT|EAI_AGAIN|net::|network/i.test(msg)) return 'Pas de connexion Internet.';
+  if (/404|latest\.yml/i.test(msg)) return 'Aucune information de mise à jour trouvée sur GitHub.';
+  return 'La vérification a échoué. Réessaie plus tard.';
+}
+
+async function checkForUpdates() {
+  if (!updater || ['checking', 'downloading', 'ready'].includes(update.state)) return update;
+  try {
+    await updater.checkForUpdates();
+  } catch (err) {
+    setUpdate({ state: 'error', error: updateError(err) });
+  }
+  return update;
+}
+
+function setupUpdater() {
+  const dev = !app.isPackaged;
+  if (dev && !fs.existsSync(DEV_UPDATE_CONFIG)) return setUpdate({ state: 'unsupported' });
+  try {
+    ({ autoUpdater: updater } = require('electron-updater'));
+  } catch {
+    return setUpdate({ state: 'unsupported' });
+  }
+  if (dev) {
+    updater.forceDevUpdateConfig = true;
+    updater.updateConfigPath = DEV_UPDATE_CONFIG;
+  }
+  updater.logger = null;
+  updater.autoDownload = false;
+  updater.autoInstallOnAppQuit = true;
+  update.canInstall = dev || isInstalled();
+
+  updater.on('checking-for-update', () => setUpdate({ state: 'checking', error: null }));
+  updater.on('update-available', (info) => setUpdate({ state: 'available', version: info.version, date: info.releaseDate }));
+  updater.on('update-not-available', () => setUpdate({ state: 'latest', checkedAt: Date.now() }));
+  updater.on('download-progress', (p) => setUpdate({ state: 'downloading', percent: Math.round(p.percent) }));
+  updater.on('update-downloaded', (info) => setUpdate({ state: 'ready', version: info.version }));
+  updater.on('error', (err) => setUpdate({ state: update.state === 'downloading' ? 'available' : 'error', error: updateError(err) }));
+
+  setTimeout(checkForUpdates, 4000);
+  setInterval(checkForUpdates, CHECK_EVERY);
+}
+
+handle('update:get', () => update);
+handle('update:check', () => checkForUpdates());
+
+handle('update:download', async () => {
+  if (!updater || update.state !== 'available') return update;
+  if (!update.canInstall) {
+    shell.openExternal(`${RELEASES_URL}/latest`);
+    return update;
+  }
+  setUpdate({ state: 'downloading', percent: 0, error: null });
+  updater.downloadUpdate().catch((err) => setUpdate({ state: 'available', error: updateError(err) }));
+  return update;
+});
+
+handle('update:install', () => {
+  if (update.state !== 'ready') return false;
+  // Silent install keeps the chosen folder and relaunches Notes++ afterwards.
+  setImmediate(() => updater.quitAndInstall(true, true));
+  return true;
+});
+
+handle('update:notes', () => shell.openExternal(update.version ? `${RELEASES_URL}/tag/v${update.version}` : `${RELEASES_URL}/latest`));
+
 /* ----------------------------------------------------------------- window */
 
 function createWindow() {
@@ -483,6 +575,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     Menu.setApplicationMenu(null);
     createWindow();
+    setupUpdater();
   });
   app.on('window-all-closed', () => app.quit());
 }

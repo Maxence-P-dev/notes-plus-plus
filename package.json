@@ -1,6 +1,6 @@
 {
   "name": "notes-plus-plus",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Notes++ — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
   "main": "app/main.js",
   "scripts": {
@@ -14,11 +14,6 @@
   "author": "maxencepialleport",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^44.7.0",
-    "electron-builder": "^26.15.3",
-    "esbuild": "^0.28.2",
-    "png-to-ico": "^3.0.2",
-    "sharp": "^0.35.5",
     "@tiptap/core": "^3.31.4",
     "@tiptap/extension-highlight": "^3.31.4",
     "@tiptap/extension-image": "^3.31.4",
@@ -28,7 +23,12 @@
     "@tiptap/extension-text-style": "^3.31.4",
     "@tiptap/extensions": "^3.31.4",
     "@tiptap/pm": "^3.31.4",
-    "@tiptap/starter-kit": "^3.31.4"
+    "@tiptap/starter-kit": "^3.31.4",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.5"
   },
   "allowScripts": {
     "esbuild@0.28.2": true,
@@ -83,6 +83,17 @@
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
       "menuCategory": false
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Maxence-P-dev",
+        "repo": "notes-plus-plus",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }
