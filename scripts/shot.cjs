@@ -1,4 +1,4 @@
-// Dev helper: launches Iris on a throwaway profile and saves screenshots.
+// Dev helper: launches Notes++ on a throwaway profile and saves screenshots.
 // Usage: electron scripts/shot.cjs <outDir> [steps.json]
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');

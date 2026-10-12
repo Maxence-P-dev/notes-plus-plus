@@ -1,6 +1,6 @@
-# Iris — ton cahier de cours
+# Notes++ — ton cahier de cours
 
-Iris est une application Windows pour prendre ses cours : comme le Bloc-notes, mais avec de la vraie mise en forme, des dossiers et un beau design.
+Notes++ est une application Windows pour prendre ses cours : comme le Bloc-notes, mais avec de la vraie mise en forme, des dossiers et un beau design.
 
 ## Fonctionnalités
 
@@ -20,8 +20,8 @@ Les cours sont de simples fichiers `.cours` (en HTML) dans `Documents\Mes Cours`
 
 Télécharge la dernière version dans les [**Releases**](../../releases) :
 
-- `Iris-Setup-x.y.z.exe` : l'installeur, qui crée un raccourci sur le bureau et dans le menu Démarrer.
-- `Iris-x.y.z-win-x64.zip` : la version portable. Il suffit de la décompresser et de lancer `Iris.exe`.
+- `NotesPlusPlus-Setup-x.y.z.exe` : l'installeur, qui crée un raccourci sur le bureau et dans le menu Démarrer.
+- `NotesPlusPlus-x.y.z-win-x64.zip` : la version portable. Il suffit de la décompresser et de lancer `Notes++.exe`.
 
 > L'application n'est pas signée numériquement. Au premier lancement, Windows SmartScreen peut afficher « Windows a protégé votre ordinateur » : clique sur **Informations complémentaires**, puis sur **Exécuter quand même**.
 

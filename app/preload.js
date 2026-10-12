@@ -4,7 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const invoke = (channel) => (...args) => ipcRenderer.invoke(channel, ...args);
 
-contextBridge.exposeInMainWorld('iris', {
+contextBridge.exposeInMainWorld('notesApp', {
   getSettings: invoke('settings:get'),
   setSettings: invoke('settings:set'),
   chooseRoot: invoke('root:choose'),

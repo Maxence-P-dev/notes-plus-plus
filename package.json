@@ -1,7 +1,7 @@
 {
-  "name": "iris-notes",
+  "name": "notes-plus-plus",
   "version": "1.0.0",
-  "description": "Iris — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
+  "description": "Notes++ — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
   "main": "app/main.js",
   "scripts": {
     "build": "esbuild src/renderer/app.js --bundle --minify --format=iife --target=chrome130 --outfile=app/dist/renderer.js",
@@ -33,11 +33,11 @@
     "esbuild@0.28.2": true,
     "electron-winstaller@5.4.0": true
   },
-  "productName": "Iris",
+  "productName": "Notes++",
   "build": {
-    "appId": "com.iris.notes",
-    "productName": "Iris",
-    "copyright": "© 2026 Iris",
+    "appId": "com.notesplusplus.app",
+    "productName": "Notes++",
+    "copyright": "© 2026 Notes++",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -62,7 +62,7 @@
           ]
         }
       ],
-      "artifactName": "Iris-${version}-win-${arch}.${ext}"
+      "artifactName": "NotesPlusPlus-${version}-win-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -70,10 +70,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Iris",
+      "shortcutName": "Notes++",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "artifactName": "Iris-Setup-${version}.${ext}",
+      "artifactName": "NotesPlusPlus-Setup-${version}.${ext}",
       "language": "1036"
     }
   }

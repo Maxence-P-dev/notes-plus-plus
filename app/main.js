@@ -181,7 +181,7 @@ async function search(query) {
   return results;
 }
 
-const WELCOME = `<p>Iris est ton cahier de cours. Tout est <strong>enregistré automatiquement</strong> pendant que tu écris.</p>
+const WELCOME = `<p>Notes++ est ton cahier de cours. Tout est <strong>enregistré automatiquement</strong> pendant que tu écris.</p>
 <div data-callout="info"><p><strong>Astuce :</strong> tape <code>/</code> au début d'une ligne pour insérer un titre, une liste, un tableau, un encadré…</p></div>
 <h2>Organiser ses cours</h2>
 <ul>
@@ -194,7 +194,7 @@ const WELCOME = `<p>Iris est ton cahier de cours. Tout est <strong>enregistré a
 <div data-callout="definition"><p><strong>Définition :</strong> un encadré met en valeur une notion importante du cours.</p></div>
 <div data-callout="warning"><p><strong>Attention :</strong> les encadrés « attention » sont parfaits pour les pièges à éviter.</p></div>
 <ul data-type="taskList">
-<li data-type="taskItem" data-checked="true"><p>Découvrir Iris</p></li>
+<li data-type="taskItem" data-checked="true"><p>Découvrir Notes++</p></li>
 <li data-type="taskItem" data-checked="false"><p>Créer mon premier cours</p></li>
 </ul>
 <h2>Raccourcis utiles</h2>
@@ -359,7 +359,7 @@ body{padding:0 4px;font-family:"Segoe UI Variable Text","Segoe UI",system-ui,san
 .doc-title{font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;font-size:30pt;font-weight:700;letter-spacing:-.02em;margin:0 0 18px;padding-bottom:14px;border-bottom:3px solid var(--p-accent)}
 </style></head><body><div class="doc-title">${esc(title)}</div><div class="prose">${bodyHtml}</div></body></html>`;
 
-  const tmp = path.join(app.getPath('temp'), `iris-export-${Date.now()}.html`);
+  const tmp = path.join(app.getPath('temp'), `notes-export-${Date.now()}.html`);
   await fsp.writeFile(tmp, html, 'utf8');
   const pdfWin = new BrowserWindow({ show: false, webPreferences: { sandbox: true, javascript: false } });
   try {
@@ -401,7 +401,7 @@ function createWindow() {
     minWidth: 760,
     minHeight: 480,
     show: false,
-    title: 'Iris',
+    title: 'Notes++',
     backgroundColor: THEME_COLORS[theme].color,
     titleBarStyle: 'hidden',
     titleBarOverlay: { ...THEME_COLORS[theme], height: 44 },

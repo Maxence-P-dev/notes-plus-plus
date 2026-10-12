@@ -3,7 +3,7 @@ import { icon, LOGO } from './icons.js';
 import { $, h, openFloating, closeFloating, isFloatingOpen, menuList, contextMenu, promptModal, confirmModal, toast } from './ui.js';
 import { createEditor, CALLOUTS } from './editor.js';
 
-const api = window.iris;
+const api = window.notesApp;
 
 const S = {
   settings: null,
@@ -383,12 +383,12 @@ function updateDocChrome() {
   crumbs.innerHTML = '';
   const title = $('#title');
   if (!S.current) {
-    document.title = 'Iris';
+    document.title = 'Notes++';
     return;
   }
   const parts = S.current.split('/');
   const name = baseName(S.current);
-  document.title = `${name} — Iris`;
+  document.title = `${name} — Notes++`;
   if (document.activeElement !== title) title.value = name;
   autosizeTitle();
 
@@ -1086,7 +1086,7 @@ async function init() {
     setZoom(1);
   }
 
-  $('#brand').innerHTML = LOGO + '<span>Iris</span>';
+  $('#brand').innerHTML = LOGO + '<span>Notes++</span>';
   $('#btn-sidebar').innerHTML = icon('sidebar');
   $('#btn-focus').innerHTML = icon('focus');
   $('#btn-pdf').innerHTML = icon('download');
