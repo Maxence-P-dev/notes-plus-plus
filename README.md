@@ -9,15 +9,11 @@
 <p align="center">
   <a href="https://github.com/Maxence-P-dev/notes-plus-plus/releases/latest/download/NotesPlusPlus-Setup.exe"><img src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger-Installeur%20Windows-6d5dfc?style=for-the-badge&logo=windows11&logoColor=white" alt="Télécharger l'installeur Windows"></a>
   <a href="https://github.com/Maxence-P-dev/notes-plus-plus/releases/latest/download/NotesPlusPlus-Portable.zip"><img src="https://img.shields.io/badge/Version-portable%20(.zip)-2c1b94?style=for-the-badge&logo=files&logoColor=white" alt="Télécharger la version portable"></a>
-  <br>
-  <a href="https://github.com/Maxence-P-dev/notes-plus-plus/releases/latest/download/NotesPlusPlus-Mac-arm64.dmg"><img src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger-Mac%20Apple%20(M1%E2%80%A6M4)-111111?style=for-the-badge&logo=apple&logoColor=white" alt="Télécharger pour Mac Apple Silicon"></a>
-  <a href="https://github.com/Maxence-P-dev/notes-plus-plus/releases/latest/download/NotesPlusPlus-Mac-x64.dmg"><img src="https://img.shields.io/badge/Mac-Intel-555555?style=for-the-badge&logo=apple&logoColor=white" alt="Télécharger pour Mac Intel"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Maxence-P-dev/notes-plus-plus/releases/latest"><img src="https://img.shields.io/github/v/release/Maxence-P-dev/notes-plus-plus?label=version&color=8b7dff" alt="Dernière version"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4" alt="Windows 10 et 11">
-  <img src="https://img.shields.io/badge/macOS-Apple%20%7C%20Intel-111111" alt="macOS">
   <img src="https://img.shields.io/badge/prix-gratuit-30a46c" alt="Gratuit">
   <img src="https://img.shields.io/github/license/Maxence-P-dev/notes-plus-plus?color=555" alt="Licence MIT">
 </p>
@@ -69,8 +65,6 @@ Un raccourci est ajouté sur le bureau et dans le menu Démarrer.
 <td width="45%"><img src="docs/installer.png" alt="L'installeur de Notes++"></td>
 </tr>
 </table>
-
-**Sur Mac :** ouvre le fichier `.dmg` (version « Apple » pour les Mac M1 à M4, « Intel » pour les plus anciens), puis glisse Notes++ dans **Applications**. Au premier lancement, fais **clic droit → Ouvrir** (ou Réglages → Confidentialité et sécurité → « Ouvrir quand même »).
 
 > [!NOTE]
 > L'application n'est pas signée numériquement. Si Windows affiche « Windows a protégé votre ordinateur », clique sur **Informations complémentaires**, puis sur **Exécuter quand même**.

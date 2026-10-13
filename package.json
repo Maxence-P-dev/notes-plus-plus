@@ -10,7 +10,6 @@
     "icons": "node scripts/make-icons.mjs",
     "dist": "npm run build && electron-builder --win --x64 --publish never",
     "installer-art": "node scripts/make-installer-art.mjs",
-    "dist:mac": "npm run build && electron-builder --mac --publish never",
     "update-feed": "node scripts/update-feed.mjs"
   },
   "author": "maxencepialleport",
@@ -103,24 +102,6 @@
         "url": "https://raw.githubusercontent.com/Maxence-P-dev/notes-plus-plus/main/update/"
       }
     ],
-    "mac": {
-      "category": "public.app-category.education",
-      "icon": "build/icon.png",
-      "identity": "-",
-      "target": [
-        {
-          "target": "dmg"
-        },
-        {
-          "target": "zip"
-        }
-      ],
-      "artifactName": "NotesPlusPlus-Mac-${arch}.${ext}"
-    },
-    "dmg": {
-      "title": "Notes++",
-      "artifactName": "NotesPlusPlus-Mac-${arch}.${ext}"
-    },
     "asarUnpack": [
       "node_modules/node-llama-cpp/bins",
       "node_modules/node-llama-cpp/llama/localBuilds",
