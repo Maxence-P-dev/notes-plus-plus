@@ -2,10 +2,14 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: file:; font-src 'self' data:; connect-src 'self' data: blob:" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: file:; font-src 'self' data:; connect-src 'self' data: blob:; frame-src file:" />
     <title>Notes++</title>
+    <link rel="stylesheet" href="vendor/katex/katex.min.css" />
     <link rel="stylesheet" href="content.css" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="review.css" />
+    <link rel="stylesheet" href="math.css" />
+    <link rel="stylesheet" href="pdf.css" />
   </head>
   <body>
     <header class="titlebar">
@@ -34,6 +38,7 @@
             <button class="btn primary sm" id="new-file"></button>
             <button class="btn soft sm" id="new-folder"></button>
           </div>
+          <button class="sb-review" id="btn-review" title="Réviser mes cartes (Ctrl+Maj+R)"></button>
         </div>
         <div class="sb-label"><span id="sb-label-text">Mes cours</span></div>
         <div class="tree" id="tree" tabindex="0"></div>
@@ -45,6 +50,10 @@
 
       <main class="main">
         <section class="empty" id="empty"></section>
+        <section class="pdfview" id="pdfview" hidden>
+          <div class="pdf-bar" id="pdf-bar"></div>
+          <iframe class="pdf-frame" id="pdf-frame" title="Document PDF"></iframe>
+        </section>
         <section class="doc" id="doc" hidden>
           <div class="toolbar" id="toolbar"></div>
           <div class="scroller" id="scroller">

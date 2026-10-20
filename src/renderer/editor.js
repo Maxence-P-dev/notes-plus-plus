@@ -11,6 +11,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { icon } from './icons.js';
 import { h } from './ui.js';
 import { Diagram, ShapeBoard } from './blocks.js';
+import { mathExtensions } from './math.js';
 
 export const CALLOUTS = [
   { id: 'info', label: 'Info', icon: 'info' },
@@ -117,6 +118,8 @@ function slashItems(actions) {
     })),
     { label: 'Citation', hint: 'Bloc de citation', icon: 'quote', k: 'citation quote', run: (c) => c.toggleBlockquote() },
     { label: 'Code', hint: 'Bloc de code', icon: 'codeBlock', k: 'code bloc programme', run: (c) => c.toggleCodeBlock() },
+    { label: 'Formule', hint: 'Maths en LaTeX dans la ligne (ou $$x^2$$)', icon: 'sigma', k: 'formule maths math latex equation katex fraction racine', run: later(() => actions.math({ kind: 'inline' })) },
+    { label: 'Formule centrée', hint: 'Grande formule sur sa propre ligne', icon: 'sigma', k: 'formule centree bloc maths math latex equation katex', run: later(() => actions.math({ kind: 'block' })) },
     { label: 'Tableau', hint: '3 × 3 avec en-tête', icon: 'table', k: 'tableau table grille', run: (c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }) },
     { label: 'Image', hint: 'Depuis ton ordinateur', icon: 'image', k: 'image photo picture', run: (c) => (pickImage(), c) },
     { label: 'Séparateur', hint: 'Ligne horizontale', icon: 'minus', k: 'separateur ligne hr divider', run: (c) => c.setHorizontalRule() },
@@ -283,6 +286,7 @@ export function createEditor({ element, onUpdate, onTransaction, actions }) {
         resize: { enabled: true, directions: ['bottom-right', 'bottom-left'], minWidth: 60, minHeight: 40, alwaysPreserveAspectRatio: true },
       }),
       Callout,
+      ...mathExtensions((kind, latex, pos) => actions.math({ kind, latex, pos })),
       Diagram,
       ShapeBoard,
       Placeholder.configure({

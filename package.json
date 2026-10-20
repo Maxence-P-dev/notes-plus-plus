@@ -1,16 +1,17 @@
 {
   "name": "notes-plus-plus",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Notes++ — un cahier de cours moderne : dossiers, mise en forme riche, thème clair/sombre, export PDF.",
   "main": "app/main.js",
   "scripts": {
-    "build": "node scripts/make-pictos.mjs && esbuild src/renderer/app.js --bundle --minify --format=iife --target=chrome130 --outfile=app/dist/renderer.js",
+    "build": "node scripts/make-pictos.mjs && node scripts/copy-katex.mjs && esbuild src/renderer/app.js --bundle --minify --format=iife --target=chrome130 --outfile=app/dist/renderer.js",
     "watch": "npm run build -- --watch --sourcemap",
     "start": "npm run build && electron .",
     "icons": "node scripts/make-icons.mjs",
     "dist": "npm run build && electron-builder --win --x64 --publish never",
     "installer-art": "node scripts/make-installer-art.mjs",
-    "update-feed": "node scripts/update-feed.mjs"
+    "update-feed": "node scripts/update-feed.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "author": "maxencepialleport",
   "license": "MIT",
@@ -19,6 +20,7 @@
     "@tiptap/extension-highlight": "^3.31.4",
     "@tiptap/extension-image": "^3.31.4",
     "@tiptap/extension-list": "^3.31.4",
+    "@tiptap/extension-mathematics": "^3.31.4",
     "@tiptap/extension-table": "^3.31.4",
     "@tiptap/extension-text-align": "^3.31.4",
     "@tiptap/extension-text-style": "^3.31.4",
@@ -30,6 +32,7 @@
     "electron-builder": "^26.15.3",
     "emojibase-data": "^17.0.0",
     "esbuild": "^0.28.2",
+    "katex": "^0.16.47",
     "png-to-ico": "^3.0.2",
     "sharp": "^0.35.5"
   },

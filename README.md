@@ -34,6 +34,9 @@
 - **Mise en forme riche** : titres, gras, italique, souligné, couleurs, surlignage, listes, cases à cocher, citations, code, tableaux, images, liens, alignement.
 - **Images** à placer où tu veux : à gauche, au centre, à droite, ou avec du texte à côté. Redimensionnables et déplaçables.
 - **Encadrés de cours** : *Info*, *Définition*, *Attention*, *À retenir*.
+- **Flashcards et révision espacée** : les encadrés *Définition* et *À retenir* deviennent automatiquement des cartes de révision, à la manière d'Anki. Notes *À revoir*, *Difficile*, *Bien*, *Facile* : chaque carte revient au bon moment (`Ctrl+Maj+R`).
+- **Formules mathématiques** (LaTeX) : dans la ligne ou centrées, avec aperçu en direct et boutons pour les symboles courants (fraction, racine, intégrale, limite…). Aussi dans l'export PDF et sur les flashcards.
+- **PDF** : importe tes PDF (sujets, polys, corrigés) dans tes dossiers et lis-les directement dans Notes++, à côté de tes cours.
 - **Menu `/`** : tape `/` pour insérer n'importe quel bloc sans quitter le clavier.
 - **Thème clair, sombre ou système**.
 - **Enregistrement automatique** pendant que tu écris.
@@ -76,6 +79,7 @@ Un raccourci est ajouté sur le bureau et dans le menu Démarrer.
 | Nouveau cours | `Ctrl+N` |
 | Nouveau dossier | `Ctrl+Maj+N` |
 | Rechercher | `Ctrl+P` |
+| Réviser mes cartes | `Ctrl+Maj+R` |
 | Insérer un bloc | `/` |
 | Lien | `Ctrl+K` |
 | Thème clair / sombre | `Ctrl+Maj+L` |
@@ -92,6 +96,7 @@ Il faut [Node.js](https://nodejs.org) 20 ou plus récent.
 ```bash
 npm install
 npm start        # lance l'application
+npm test         # tests (révision espacée, flashcards)
 npm run dist     # crée l'installeur et le zip dans release/
 ```
 
@@ -99,8 +104,8 @@ L'application est construite avec Electron et l'éditeur TipTap. Le code est org
 
 - `app/main.js` : fenêtre, fichiers et dossiers, export PDF
 - `app/preload.js` : pont sécurisé entre la fenêtre et le système
-- `src/renderer/` : interface (arborescence, barre d'outils, éditeur, menu `/`)
-- `app/styles.css` et `app/content.css` : thème de l'interface et style des cours
+- `src/renderer/` : interface (arborescence, barre d'outils, éditeur, menu `/`, révision, formules)
+- `app/styles.css` et `app/content.css` : thème de l'interface et style des cours ; `review.css`, `math.css`, `pdf.css` pour la révision, les formules et le lecteur PDF
 - `scripts/demo/` : génération automatique de la vidéo de présentation (narration, enregistrement, montage)
 
 ## Licence

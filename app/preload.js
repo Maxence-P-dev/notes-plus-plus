@@ -1,6 +1,6 @@
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 const invoke = (channel) => (...args) => ipcRenderer.invoke(channel, ...args);
 
@@ -23,6 +23,16 @@ contextBridge.exposeInMainWorld('notesApp', {
   pickImage: invoke('image:pick'),
   exportPdf: invoke('export:pdf'),
   toggleFullscreen: invoke('win:fullscreen'),
+  pdf: {
+    import: invoke('pdf:import'),
+    importFiles: (dir, files) => ipcRenderer.invoke('pdf:importPaths', dir, [...files].map((f) => webUtils.getPathForFile(f))),
+    url: invoke('pdf:url'),
+    openExternal: invoke('pdf:openExternal'),
+  },
+  revision: {
+    load: invoke('revision:load'),
+    save: invoke('revision:save'),
+  },
   update: {
     get: invoke('update:get'),
     check: invoke('update:check'),

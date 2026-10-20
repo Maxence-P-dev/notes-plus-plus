@@ -1,0 +1,334 @@
+/* Mode révision (flashcards). Reprend les jetons et composants de styles.css. */
+
+/* ------------------------------------------------- bouton de la barre latérale */
+.sb-review {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--main);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.sb-review:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.sb-review:active {
+  transform: scale(0.98);
+}
+.sb-review svg {
+  color: var(--accent);
+}
+.rv-badge {
+  margin-left: auto;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.rv-badge[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ fenêtre */
+.modal.review {
+  width: min(760px, calc(100vw - 32px));
+  height: min(640px, calc(100vh - 60px));
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.rv-head {
+  gap: 14px;
+}
+.rv-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--accent);
+}
+.rv-title h3 {
+  color: var(--text);
+}
+.rv-scope {
+  margin-left: auto;
+  flex-wrap: nowrap;
+  max-width: 60%;
+  overflow: hidden;
+}
+.rv-scope .seg-btn {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  line-height: 30px;
+}
+.rv-progress {
+  height: 3px;
+  background: var(--hover);
+}
+.rv-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rv-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 28px 24px;
+  overflow-y: auto;
+}
+.rv-stats {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.rv-loading {
+  margin: auto;
+  color: var(--text-3);
+}
+
+/* -------------------------------------------------------------------- carte */
+.rv-card {
+  --k: var(--c-definition);
+  --k-bg: var(--c-definition-bg);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--main);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 24px 22px;
+  position: relative;
+  overflow: hidden;
+  animation: rv-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rv-card.kind-tip {
+  --k: var(--c-tip);
+  --k-bg: var(--c-tip-bg);
+}
+.rv-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--k);
+}
+@keyframes rv-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+.rv-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.rv-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  background: var(--k-bg);
+  color: var(--k);
+  font-size: 12px;
+  font-weight: 700;
+}
+.rv-new {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.rv-source {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 45%;
+  font-size: 12.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+.rv-source:hover {
+  color: var(--accent-text);
+  background: var(--hover);
+}
+.rv-front {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin: auto 0;
+  padding: 10px 0;
+  transition: font-size 0.3s ease, margin 0.3s ease;
+}
+.rv-hint {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  margin-top: -6px;
+}
+.rv-answer {
+  display: none;
+  border-top: 1px dashed var(--border-strong);
+  margin-top: 16px;
+  padding-top: 16px;
+  font-size: 16px;
+}
+.rv-card.revealed .rv-front {
+  font-size: 21px;
+  margin: 8px 0 0;
+}
+.rv-card.revealed .rv-answer {
+  display: block;
+  animation: rv-reveal 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes rv-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ---------------------------------------------------------------- réponses */
+.rv-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+.rv-show {
+  height: 42px;
+  padding: 0 22px;
+}
+.rv-show .kbd {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+  color: #fff;
+}
+.rv-grades {
+  display: none;
+  width: 100%;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.rv-actions.revealed .rv-show {
+  display: none;
+}
+.rv-actions.revealed .rv-grades {
+  display: grid;
+  animation: rv-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rv-grade {
+  --g: var(--accent);
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 10px 6px 9px;
+  border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--g) 30%, var(--border));
+  background: color-mix(in srgb, var(--g) 8%, transparent);
+  transition: background 0.15s, transform 0.1s;
+}
+.rv-grade:hover {
+  background: color-mix(in srgb, var(--g) 16%, transparent);
+}
+.rv-grade:active {
+  transform: scale(0.97);
+}
+.rv-grade.g0 {
+  --g: var(--danger);
+}
+.rv-grade.g1 {
+  --g: var(--c-warning);
+}
+.rv-grade.g2 {
+  --g: var(--accent);
+}
+.rv-grade.g3 {
+  --g: var(--c-tip);
+}
+.rv-grade-label {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--g);
+}
+.rv-grade-int {
+  font-size: 12px;
+  color: var(--text-2);
+}
+.rv-grade .kbd {
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------ fin de séance */
+.rv-end {
+  margin: auto;
+  max-width: 420px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  animation: rv-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rv-end-ic {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.rv-end h2 {
+  margin: 6px 0 0;
+  font-size: 21px;
+}
+.rv-end p {
+  margin: 0 0 8px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-card,
+  .rv-card.revealed .rv-answer,
+  .rv-actions.revealed .rv-grades,
+  .rv-end {
+    animation: none;
+  }
+}

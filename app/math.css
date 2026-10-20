@@ -1,0 +1,130 @@
+/* Formules mathématiques : rendu dans le cours et fenêtre d'édition. */
+
+/* ------------------------------------------------------------ dans le cours */
+.prose [data-type='inline-math'] {
+  display: inline-block;
+  padding: 0 3px;
+  margin: 0 1px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.prose [data-type='block-math'] {
+  display: block;
+  margin: 14px 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  text-align: center;
+  overflow-x: auto;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.prose [data-type='inline-math']:hover,
+.prose [data-type='block-math']:hover,
+.prose .ProseMirror-selectednode[data-type$='-math'] {
+  background: var(--accent-soft);
+}
+.prose .ProseMirror-selectednode[data-type$='-math'] {
+  outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.prose .inline-math-error,
+.prose .block-math-error,
+.prose [data-type$='-math'] .katex-error {
+  color: var(--danger);
+  font-family: Consolas, monospace;
+  font-size: 0.9em;
+}
+.katex {
+  font-size: 1.12em;
+}
+
+/* --------------------------------------------------------- fenêtre d'édition */
+.floating.math-floating {
+  padding: 0;
+}
+.math-editor {
+  width: 420px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.math-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 13px;
+}
+.math-help {
+  font-weight: 400;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.math-snippets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.math-snippet {
+  min-width: 34px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.math-snippet:hover {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent-text);
+}
+.input.math-input {
+  height: auto;
+  min-height: 58px;
+  padding: 9px 11px;
+  margin: 0;
+  resize: vertical;
+  font-family: Consolas, 'Cascadia Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.math-preview {
+  min-height: 52px;
+  max-height: 180px;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-radius: 9px;
+  background: var(--hover);
+  color: var(--text);
+}
+.math-preview.empty {
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+.math-error {
+  font-size: 12px;
+  color: var(--danger);
+  min-height: 0;
+}
+.math-error:empty {
+  display: none;
+}
+.math-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+.math-spacer {
+  flex: 1;
+}
+.btn.danger-text {
+  color: var(--danger);
+}
+.btn.danger-text:hover {
+  background: var(--danger-soft);
+}

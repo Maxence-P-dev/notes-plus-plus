@@ -1,0 +1,47 @@
+/* Lecteur PDF intégré (le rendu est fait par le lecteur de Chromium). */
+
+.pdfview {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.pdfview[hidden] {
+  display: none;
+}
+.pdf-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px 7px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--main);
+  flex: none;
+}
+.pdf-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pdf-name svg {
+  color: var(--danger);
+  flex: none;
+}
+.pdf-spacer {
+  flex: 1;
+}
+.pdf-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--chrome);
+}
+
+/* Les PDF se repèrent dans l'arborescence par leur icône rouge. */
+.row.pdf .ti {
+  color: var(--danger);
+}

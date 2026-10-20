@@ -1,6 +1,7 @@
 'use strict';
 
 const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme, Menu } = require('electron');
+const { pathToFileURL } = require('url');
 const llm = require('./llm');
 const path = require('path');
 const fs = require('fs');
@@ -118,6 +119,8 @@ async function readTree(dir) {
       out.push({ type: 'dir', name: e.name, path: rel(full), children: await readTree(full) });
     } else if (e.isFile() && e.name.toLowerCase().endsWith(EXT)) {
       out.push({ type: 'file', name: e.name.slice(0, -EXT.length), path: rel(full) });
+    } else if (e.isFile() && e.name.toLowerCase().endsWith('.pdf')) {
+      out.push({ type: 'pdf', name: e.name.slice(0, -4), path: rel(full) });
     }
   }
   out.sort((a, b) => (a.type !== b.type ? (a.type === 'dir' ? -1 : 1) : collator.compare(a.name, b.name)));
@@ -193,7 +196,7 @@ const WELCOME = `<p>Notes++ est ton cahier de cours. Tout est <strong>enregistr�
 <h2>Mettre en forme</h2>
 <p>Clique sur une <strong>image</strong> pour la placer à gauche, au centre, à droite, ou avec du texte à côté. Tu peux aussi la redimensionner avec les poignées.</p>
 <p>Du texte en <strong>gras</strong>, en <em>italique</em>, <u>souligné</u>, <mark data-color="rgba(255, 212, 0, 0.4)" style="background-color: rgba(255, 212, 0, 0.4)">surligné</mark> ou en <span style="color: #2f80ed">couleur</span>.</p>
-<div data-callout="definition"><p><strong>Définition :</strong> un encadré met en valeur une notion importante du cours.</p></div>
+<div data-callout="definition"><p><strong>Encadré Définition</strong> : met en valeur une notion importante. Il devient aussi une carte de révision : clique sur « Réviser » dans la barre latérale.</p></div>
 <div data-callout="warning"><p><strong>Attention :</strong> les encadrés « attention » sont parfaits pour les pièges à éviter.</p></div>
 <ul data-type="taskList">
 <li data-type="taskItem" data-checked="true"><p>Découvrir Notes++</p></li>
@@ -290,10 +293,13 @@ handle('fs:createFolder', async (parent, name) => {
   return rel(target);
 });
 
+// Extension conservée lors d'un renommage ou d'un déplacement (.cours, .pdf, rien pour un dossier).
+const extOf = (full, stat) => (stat.isDirectory() ? '' : path.extname(full));
+
 handle('fs:rename', async (p, newName) => {
   const from = abs(p);
   const stat = await fsp.stat(from);
-  const ext = stat.isDirectory() ? '' : EXT;
+  const ext = extOf(from, stat);
   const name = cleanName(newName);
   if (!name) throw new Error('Nom invalide');
   const current = path.basename(from, ext);
@@ -311,7 +317,7 @@ handle('fs:move', async (p, targetDir) => {
   if (dir === from || dir.startsWith(from + path.sep)) throw new Error('Impossible de déplacer un dossier dans lui-même');
   if (path.dirname(from) === dir) return p;
   const stat = await fsp.stat(from);
-  const ext = stat.isDirectory() ? '' : EXT;
+  const ext = extOf(from, stat);
   const to = await uniquePath(dir, path.basename(from, ext), ext);
   await fsp.rename(from, to);
   return rel(to);
@@ -325,6 +331,70 @@ handle('fs:delete', async (p) => {
 });
 
 handle('fs:search', (q) => search(q));
+
+/* ------------------------------------------------------------------- PDF */
+// Copie des PDF dans le dossier de cours : choisis dans une fenêtre, ou glissés depuis l'Explorateur.
+async function importPdfs(targetDir, files) {
+  const dir = abs(targetDir);
+  await fsp.mkdir(dir, { recursive: true });
+  const out = [];
+  for (const file of files) {
+    if (path.extname(file).toLowerCase() !== '.pdf') continue;
+    const to = await uniquePath(dir, cleanName(path.basename(file, path.extname(file))) || 'Document', '.pdf');
+    await fsp.copyFile(file, to);
+    out.push(rel(to));
+  }
+  return out;
+}
+
+handle('pdf:import', async (targetDir) => {
+  const r = await dialog.showOpenDialog(win, {
+    title: 'Importer des PDF',
+    properties: ['openFile', 'multiSelections'],
+    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+  });
+  if (r.canceled) return [];
+  return importPdfs(targetDir, r.filePaths);
+});
+
+handle('pdf:importPaths', (targetDir, files) => importPdfs(targetDir, Array.isArray(files) ? files : []));
+
+// Adresse file:// d'un PDF du dossier de cours, pour le lecteur intégré de Chromium.
+handle('pdf:url', (p) => {
+  const full = abs(p);
+  if (path.extname(full).toLowerCase() !== '.pdf') throw new Error('Pas un PDF');
+  return pathToFileURL(full).href;
+});
+
+handle('pdf:openExternal', async (p) => {
+  const err = await shell.openPath(abs(p));
+  if (err) throw new Error(err);
+  return true;
+});
+
+/* ------------------------------------------------------------- révision */
+// Progression des flashcards, rangée avec les cours (dossier caché, ignoré par l'arborescence).
+const revisionFile = () => path.join(abs(), '.notesplusplus', 'revision.json');
+
+handle('revision:load', async () => {
+  try {
+    const data = JSON.parse(await fsp.readFile(revisionFile(), 'utf8'));
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+});
+
+handle('revision:save', async (data) => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Données de révision invalides');
+  const file = revisionFile();
+  await fsp.mkdir(path.dirname(file), { recursive: true });
+  // Écriture atomique : un arrêt brutal ne laisse jamais un fichier à moitié écrit.
+  const tmp = `${file}.tmp`;
+  await fsp.writeFile(tmp, JSON.stringify(data), 'utf8');
+  await fsp.rename(tmp, file);
+  return true;
+});
 
 handle('fs:reveal', (p) => {
   shell.showItemInFolder(abs(p));
@@ -531,6 +601,7 @@ function createWindow() {
     trafficLightPosition: { x: 16, y: 15 },
     icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
+      plugins: true, // lecteur PDF intégré de Chromium
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,

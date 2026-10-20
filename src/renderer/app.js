@@ -6,6 +6,8 @@ import { setupUpdates, openAbout } from './update.js';
 import { openSettings, applyLook } from './settings.js';
 import { correct, diagramDialog, pictoDialog, setSettingsOpener } from './ai-ui.js';
 import { DIAGRAM_KINDS, PALETTES, insertBlock } from './blocks.js';
+import { openReview, dueCount } from './review.js';
+import { openMathEditor, mathForPdf } from './math.js';
 
 const api = window.notesApp;
 
@@ -14,6 +16,7 @@ const S = {
   root: '',
   tree: [],
   current: null,
+  pdf: null, // chemin du PDF affiché (un cours et un PDF ne sont jamais ouverts en même temps)
   selected: null, // { path, type }
   expanded: new Set(),
   lastSaved: '',
@@ -24,7 +27,7 @@ const S = {
 };
 
 const parentOf = (p) => (p && p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
-const baseName = (p) => p.split('/').pop().replace(/\.cours$/i, '');
+const baseName = (p) => p.split('/').pop().replace(/\.(cours|pdf)$/i, '');
 const within = (p, base) => p === base || p.startsWith(base + '/');
 
 /* ================================================================ theme */
@@ -88,7 +91,8 @@ function findNode(path, nodes = S.tree) {
 }
 
 function countFiles(node) {
-  return node.children.reduce((s, c) => s + (c.type === 'file' ? 1 : countFiles(c)), 0);
+  // Compte les cours seulement (les PDF ne sont pas des cours).
+  return node.children.reduce((s, c) => s + (c.type === 'dir' ? countFiles(c) : c.type === 'file' ? 1 : 0), 0);
 }
 
 async function refreshTree() {
@@ -99,6 +103,25 @@ async function refreshTree() {
   for (const p of S.expanded) if (!findNode(p)) S.expanded.delete(p);
   renderTree();
   renderRootButton();
+  refreshReviewBadge();
+}
+
+/* ============================================================== révision */
+
+let badgeTimer;
+function refreshReviewBadge() {
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(async () => {
+    const n = await dueCount(S.tree).catch(() => 0);
+    const badge = $('#btn-review .rv-badge');
+    badge.textContent = n > 99 ? '99+' : n;
+    badge.hidden = !n;
+  }, 400);
+}
+
+async function startReview() {
+  await flushSave(); // les cartes viennent des fichiers : on enregistre d'abord le cours ouvert
+  openReview({ tree: S.tree, current: S.current, folder: targetFolder() || null, openFile, onClose: refreshReviewBadge });
 }
 
 function persistExpanded() {
@@ -133,7 +156,7 @@ function renderNodes(nodes, depth) {
     const row = h(
       'div',
       {
-        class: `row ${n.type}${n.path === S.current ? ' active' : ''}${S.selected?.path === n.path ? ' selected' : ''}`,
+        class: `row ${n.type}${n.path === S.current || n.path === S.pdf ? ' active' : ''}${S.selected?.path === n.path ? ' selected' : ''}`,
         'data-path': n.path,
         'data-type': n.type,
         draggable: 'true',
@@ -224,10 +247,11 @@ function startInlineRename(path) {
 function remap(oldP, newP) {
   const map = (p) => (p && within(p, oldP) ? newP + p.slice(oldP.length) : p);
   S.current = map(S.current);
+  S.pdf = map(S.pdf);
   if (S.selected) S.selected.path = map(S.selected.path);
   S.expanded = new Set([...S.expanded].map(map));
   persistExpanded();
-  if (S.current) api.setSettings({ lastFile: S.current });
+  if (S.current || S.pdf) api.setSettings({ lastFile: S.current || S.pdf });
 }
 
 async function renameItem(path, name) {
@@ -264,13 +288,14 @@ async function deleteItem(path, type) {
   const text =
     type === 'dir'
       ? `Le dossier « ${name} » et tout son contenu (${countFiles(node)} cours) seront déplacés dans la corbeille.`
-      : `Le cours « ${name} » sera déplacé dans la corbeille.`;
+      : `${type === 'pdf' ? 'Le PDF' : 'Le cours'} « ${name} » sera déplacé dans la corbeille.`;
   if (!(await confirmModal({ title: 'Supprimer ?', text, ok: 'Supprimer', danger: true }))) return;
   if (S.current && within(S.current, path)) {
     clearTimeout(S.saveTimer);
     S.saveTimer = null;
     closeDoc();
   }
+  if (S.pdf && within(S.pdf, path)) closeDoc();
   try {
     await api.remove(path);
     if (S.selected && within(S.selected.path, path)) S.selected = null;
@@ -362,6 +387,7 @@ let slash;
 async function openFile(path) {
   if (path === S.current) return;
   await flushSave();
+  closePdf();
   let content;
   try {
     content = await api.read(path);
@@ -388,7 +414,64 @@ async function openFile(path) {
   else renderTree();
 }
 
+/* ------------------------------------------------------------------ PDF */
+
+const openExternalPdf = (path) => api.pdf.openExternal(path).catch(() => toast('Aucune application pour ouvrir ce PDF', 'error'));
+
+async function openPdf(path) {
+  if (path === S.pdf) return;
+  await flushSave();
+  let url;
+  try {
+    url = await api.pdf.url(path);
+  } catch {
+    toast('Impossible d\u2019ouvrir ce PDF', 'error');
+    return refreshTree();
+  }
+  S.current = null;
+  S.pdf = path;
+  S.selected = { path, type: 'pdf' };
+  $('#doc').hidden = true;
+  $('#empty').hidden = true;
+  $('#pdfview').hidden = false;
+  $('#pdf-frame').src = url;
+  $('#pdf-bar').replaceChildren(
+    h('span', { class: 'pdf-name', html: icon('file', 15) }, baseName(path)),
+    h('span', { class: 'pdf-spacer' }),
+    h('button', { class: 'btn ghost sm', onclick: () => openExternalPdf(path), html: icon('external', 15) + '<span>Ouvrir dans une autre application</span>' }),
+    h('button', { class: 'btn ghost sm', onclick: () => api.reveal(path), html: icon('folderOpen', 15) + '<span>Afficher dans le dossier</span>' })
+  );
+  expandTo(path);
+  api.setSettings({ lastFile: path });
+  updateDocChrome();
+  if (S.query) renderSearch();
+  else renderTree();
+}
+
+function closePdf() {
+  if (!S.pdf) return;
+  S.pdf = null;
+  $('#pdfview').hidden = true;
+  $('#pdf-frame').src = 'about:blank';
+}
+
+/** Importe des PDF dans un dossier : `files` = fichiers glissés, sinon fenêtre de choix. */
+async function importPdfs(targetDir, files) {
+  try {
+    const added = files ? await api.pdf.importFiles(targetDir, files) : await api.pdf.import(targetDir);
+    if (!added.length) return files ? toast('Seuls les fichiers PDF peuvent être importés', 'error') : null;
+    if (targetDir) S.expanded.add(targetDir);
+    persistExpanded();
+    await refreshTree();
+    toast(added.length > 1 ? `${added.length} PDF importés` : 'PDF importé');
+    if (added.length === 1) openPdf(added[0]);
+  } catch {
+    toast('Import impossible', 'error');
+  }
+}
+
 function closeDoc() {
+  closePdf();
   S.current = null;
   $('#doc').hidden = true;
   $('#empty').hidden = false;
@@ -400,14 +483,15 @@ function updateDocChrome() {
   const crumbs = $('#crumbs');
   crumbs.innerHTML = '';
   const title = $('#title');
-  if (!S.current) {
+  const cur = S.current || S.pdf;
+  if (!cur) {
     document.title = 'Notes++';
     return;
   }
-  const parts = S.current.split('/');
-  const name = baseName(S.current);
+  const parts = cur.split('/');
+  const name = baseName(cur);
   document.title = `${name} — Notes++`;
-  if (document.activeElement !== title) title.value = name;
+  if (S.current && document.activeElement !== title) title.value = name;
   autosizeTitle();
 
   const add = (label, path) => {
@@ -503,6 +587,7 @@ async function save() {
     await api.write(path, html);
     if (path === S.current) S.lastSaved = html;
     setSaveState('saved');
+    if (html.includes('data-callout')) refreshReviewBadge();
   } catch {
     setSaveState('error');
   }
@@ -753,6 +838,15 @@ function buildToolbar() {
         return m;
       },
     }),
+    tbButton('math', {
+      icon: 'sigma',
+      title: 'Formule mathématique',
+      popup: () =>
+        menuList([
+          { label: 'Formule dans la ligne', icon: 'sigma', action: () => openMathEditor(ed, { kind: 'inline' }) },
+          { label: 'Formule centrée', icon: 'sigma', action: () => openMathEditor(ed, { kind: 'block' }) },
+        ]),
+    }),
     tbButton('quote', { icon: 'quote', title: 'Citation', run: () => chain().toggleBlockquote().run(), active: () => ed.isActive('blockquote') }),
     tbButton('codeBlock', { icon: 'codeBlock', title: 'Bloc de code', run: () => chain().toggleCodeBlock().run(), active: () => ed.isActive('codeBlock') }),
     tbButton('table', { icon: 'table', title: 'Tableau', active: () => ed.isActive('table'), popup: () => (ed.isActive('table') ? tableMenu() : tableGrid()) }),
@@ -990,6 +1084,8 @@ function setupSidebar() {
     if (type === 'dir') {
       select(path, 'dir');
       toggleFolder(path);
+    } else if (type === 'pdf') {
+      openPdf(path);
     } else {
       openFile(path);
     }
@@ -997,7 +1093,7 @@ function setupSidebar() {
 
   tree.addEventListener('dblclick', (e) => {
     const row = e.target.closest('.row');
-    if (row?.dataset.type === 'file') startInlineRename(row.dataset.path);
+    if (row && row.dataset.type !== 'dir') startInlineRename(row.dataset.path);
   });
 
   tree.addEventListener('contextmenu', (e) => {
@@ -1006,6 +1102,7 @@ function setupSidebar() {
       return contextMenu(e, [
         { label: 'Nouveau cours', icon: 'filePlus', kbd: 'Ctrl N', action: () => newFile('') },
         { label: 'Nouveau dossier', icon: 'folderPlus', kbd: 'Ctrl Maj N', action: () => newFolder('') },
+        { label: 'Importer un PDF…', icon: 'download', action: () => importPdfs('') },
         'sep',
         { label: 'Ouvrir dans l’explorateur', icon: 'external', action: () => api.reveal('') },
       ]);
@@ -1016,11 +1113,21 @@ function setupSidebar() {
       contextMenu(e, [
         { label: 'Nouveau cours ici', icon: 'filePlus', action: () => newFile(path) },
         { label: 'Nouveau sous-dossier', icon: 'folderPlus', action: () => newFolder(path) },
+        { label: 'Importer un PDF ici…', icon: 'download', action: () => importPdfs(path) },
         'sep',
         { label: 'Renommer', icon: 'pencil', kbd: 'F2', action: () => startInlineRename(path) },
         { label: 'Afficher dans l’explorateur', icon: 'external', action: () => api.reveal(path) },
         'sep',
         { label: 'Supprimer', icon: 'trash', danger: true, kbd: 'Suppr', action: () => deleteItem(path, 'dir') },
+      ]);
+    } else if (type === 'pdf') {
+      contextMenu(e, [
+        { label: 'Ouvrir', icon: 'file', action: () => openPdf(path) },
+        { label: 'Ouvrir dans une autre application', icon: 'external', action: () => openExternalPdf(path) },
+        { label: 'Renommer', icon: 'pencil', kbd: 'F2', action: () => startInlineRename(path) },
+        { label: 'Afficher dans l\u2019explorateur', icon: 'folderOpen', action: () => api.reveal(path) },
+        'sep',
+        { label: 'Supprimer', icon: 'trash', danger: true, kbd: 'Suppr', action: () => deleteItem(path, 'pdf') },
       ]);
     } else {
       contextMenu(e, [
@@ -1064,7 +1171,19 @@ function setupSidebar() {
     clearDrop();
     tree.querySelectorAll('.dragging').forEach((n) => n.classList.remove('dragging'));
   });
+  const externalFiles = (e) => !dragPath && e.dataTransfer?.types.includes('Files');
   tree.addEventListener('dragover', (e) => {
+    if (externalFiles(e)) {
+      // PDF glissé depuis l'Explorateur : on montre le dossier qui le recevra.
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      const t = dropTarget(e);
+      if (!t.el?.classList.contains('drop')) {
+        clearDrop();
+        t.el?.classList.add('drop');
+      }
+      return;
+    }
     if (!dragPath) return;
     const t = dropTarget(e);
     if (within(t.dir, dragPath) && t.dir !== parentOf(dragPath)) return;
@@ -1086,6 +1205,7 @@ function setupSidebar() {
     e.preventDefault();
     clearTimeout(hoverTimer);
     clearDrop();
+    if (externalFiles(e)) return importPdfs(dropTarget(e).dir, e.dataTransfer.files);
     if (!dragPath) return;
     const t = dropTarget(e);
     const p = dragPath;
@@ -1099,6 +1219,8 @@ function setupSidebar() {
   $('#new-folder').title = 'Nouveau dossier (Ctrl+Maj+N)';
   $('#new-file').addEventListener('click', () => newFile());
   $('#new-folder').addEventListener('click', () => newFolder());
+  $('#btn-review').innerHTML = icon('cards', 16) + '<span>Réviser</span><span class="rv-badge" hidden></span>';
+  $('#btn-review').addEventListener('click', startReview);
 
   $('#search-ic').innerHTML = icon('search', 15);
   const search = $('#search');
@@ -1158,7 +1280,7 @@ async function exportPdf() {
   await flushSave();
   setSaveState('saving');
   try {
-    const file = await api.exportPdf(baseName(S.current), ed.getHTML(), { accent: S.settings.accent, font: S.settings.font });
+    const file = await api.exportPdf(baseName(S.current), mathForPdf(ed.getHTML()), { accent: S.settings.accent, font: S.settings.font });
     if (file) toast('PDF exporté');
   } catch {
     toast('Export PDF impossible', 'error');
@@ -1179,7 +1301,8 @@ function renderEmpty() {
         'div',
         { class: 'empty-actions' },
         h('button', { class: 'btn primary', onclick: () => newFile(), html: icon('filePlus', 17) + '<span>Nouveau cours</span>' }),
-        h('button', { class: 'btn soft', onclick: () => newFolder(), html: icon('folderPlus', 17) + '<span>Nouveau dossier</span>' })
+        h('button', { class: 'btn soft', onclick: () => newFolder(), html: icon('folderPlus', 17) + '<span>Nouveau dossier</span>' }),
+        h('button', { class: 'btn soft', onclick: () => importPdfs(targetFolder()), html: icon('download', 17) + '<span>Importer un PDF</span>' })
       ),
       h(
         'div',
@@ -1187,6 +1310,7 @@ function renderEmpty() {
         kb(['Ctrl', 'N'], 'Nouveau cours'),
         kb(['Ctrl', 'Maj', 'N'], 'Nouveau dossier'),
         kb(['Ctrl', 'P'], 'Rechercher'),
+        kb(['Ctrl', 'Maj', 'R'], 'Réviser mes cartes'),
         kb(['/'], 'Insérer un bloc'),
         kb(['Ctrl', 'Maj', 'L'], 'Thème clair / sombre'),
         kb(['F11'], 'Mode concentration')
@@ -1214,6 +1338,7 @@ function setupShortcuts() {
     if (mod && e.key === ',') return e.preventDefault(), openAppSettings();
     if (mod && e.shiftKey && k === 'o' && S.current) return e.preventDefault(), correct(ed);
     if (mod && e.shiftKey && k === 'e') return e.preventDefault(), exportPdf();
+    if (mod && e.shiftKey && k === 'r') return e.preventDefault(), startReview();
     if (mod && e.key === '\\') return e.preventDefault(), toggleSidebar();
     if (mod && k === 's') {
       e.preventDefault();
@@ -1280,6 +1405,7 @@ async function init() {
       diagram: () => diagramDialog(ed),
       illustration: () => pictoDialog(ed),
       correct: () => correct(ed),
+      math: (opts) => openMathEditor(ed, opts),
     },
     onUpdate: () => {
       scheduleSave();
@@ -1309,7 +1435,7 @@ async function init() {
 
   await refreshTree();
   const last = (await api.getSettings()).lastFile; // re-read: first launch creates the welcome course
-  if (last && findNode(last)) await openFile(last);
+  if (last && findNode(last)) await (/\.pdf$/i.test(last) ? openPdf(last) : openFile(last));
   document.body.classList.add('ready');
 }
 

@@ -23,7 +23,8 @@ fs.writeFileSync(path.join(profile, 'settings.json'), JSON.stringify({ root: pat
 const electron = require('electron');
 electron.dialog.showSaveDialog = async () => ({ canceled: false, filePath: path.join(out, 'export.pdf') });
 electron.shell.openPath = async () => '';
-electron.dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [path.join(__dirname, '..', 'docs', 'sample.png')] });
+// SHOT_OPEN_FILE choisit le fichier renvoyé par la fenêtre « Ouvrir » (image par défaut).
+electron.dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [process.env.SHOT_OPEN_FILE || path.join(__dirname, '..', 'docs', 'sample.png')] });
 require('../app/main.js');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 // MOCK_AI=1 replaces the local AI with canned answers (no model needed, instant).
